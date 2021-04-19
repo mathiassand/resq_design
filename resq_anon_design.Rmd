@@ -29,10 +29,15 @@ resq_df<-resq_clean %>%
     DTNMedian=median(DTN),
     DTNMean=mean(DTN),
     AgeMean=mean(age)
-    )
+    ) 
+
+resq_df %<>% 
+   mutate(
+     DTNCohort = cut(DTNMean, c(0, 30, 45, 60, 120, Inf), labels = c("<30", "30-45", "45-60", "60-120", ">120"))
+)
 
 
-
+#resq_df$groups <- cut(resq_df$DTNMean, breaks=c(0))
   
 ggplot(resq_df[resq_df$DTNMedian<250 & resq_df$DTNMean < 200 & resq_df$year>=2016,], aes(x = year, y = DTNMedian)) + 
   geom_line(aes(color = factor(hospital)), show.legend = FALSE) + geom_smooth()
