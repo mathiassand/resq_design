@@ -19,7 +19,7 @@ library(reshape2)
 
 ```{r loadingData, echo=FALSE}
 
-resq_anon <- read_csv("resq-raw-data/anon_data_Hendrik.csv")
+resq_anon <- read_csv("anon_data_Hendrik.csv")
 
 resq_clean <- na.omit(resq_anon)
 
@@ -31,8 +31,10 @@ resq_df<-resq_clean %>%
     AgeMean=mean(age)
     )
 
-#resq_df$DTNMedian<250 &  
-ggplot(resq_df[resq_df$DTNMean < 200 & resq_df$year>=2016,], aes(x = year, y = DTNMean)) + 
+
+
+  
+ggplot(resq_df[resq_df$DTNMedian<250 & resq_df$DTNMean < 200 & resq_df$year>=2016,], aes(x = year, y = DTNMedian)) + 
   geom_line(aes(color = factor(hospital)), show.legend = FALSE) + geom_smooth()
 
 ```
