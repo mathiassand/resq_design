@@ -1,0 +1,48 @@
+---
+title: "anon_data_RESQ"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(tibble)
+library(skimr)
+library(magrittr)
+library(purrr)
+library(ggtext)
+library(grid)
+library(ggrepel)
+library(directlabels)
+library(reshape2)
+
+```
+
+```{r loadingData, echo=FALSE}
+
+resq_anon <- read_csv("resq-raw-data/anon_data_Hendrik.csv")
+
+resq_clean <- na.omit(resq_anon)
+
+resq_df<-resq_clean %>%
+  group_by(hospital, year) %>%
+  summarise(
+    DTNMedian=median(DTN),
+    DTNMean=mean(DTN),
+    AgeMean=mean(age)
+    )
+
+#resq_df$DTNMedian<250 &  
+ggplot(resq_df[resq_df$DTNMean < 200 & resq_df$year>=2016,], aes(x = year, y = DTNMean)) + 
+  geom_line(aes(color = factor(hospital)), show.legend = FALSE) + geom_smooth()
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
