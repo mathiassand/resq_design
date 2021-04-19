@@ -22,8 +22,7 @@ library(reshape2)
 resq_anon <- read_csv("anon_data_Hendrik.csv")
 #need to sort out hospital with only 1 year entry as they dont have any "progress"?
 
-#cohorts need to be changed to their destination DTNMean instead, as this will show us
-#where they started, showing us their "story".
+
 
 resq_clean <- na.omit(resq_anon)
 
@@ -31,28 +30,35 @@ resq_df<-resq_clean %>%
   #filtering for years after 2015 only, as Mirek told us RES-Q was added in 2016. 
   #Dataset has a lot of misstypes, or errors? 1900, 2013, 2014 etc.
   filter(year > 2015) %>%
-  group_by(hospital) %>%
+  group_by(hospital, year) %>%
   summarise(
-    DTNMean=mean(DTN),
-    firstYear=min(year)
+    DTNMedian=median(DTN),
+    DTNMean=mean(DTN)
     ) %>% ungroup() %>%
+  group_by(hospital) %>%
+  mutate(firstYear=min(year),
+         lastYear=max(year)) %>% ungroup()
+
+#cohorts need to be changed to their beginning DTNMean instead, as this will show us
+#where they started, showing us their "story".
+
+resq_df %<>%
   group_by(firstYear) %>%
   mutate(
-     DTNMeanCohort = cut(DTNMean, breaks = c(0, 30, 45, 60, 120, Inf), labels = c("<30", "30-45", "45-60", "60-120", ">120"))) %>% ungroup()
+    DTNMeanCohort = cut(DTNMean, breaks = c(0, 30, 45, 60, 120, Inf), labels = c("<30", "30-45", "45-60", "60-120", ">120"))
+     ) %>% ungroup()
 
 # %>% group_by(DTNMeanCohort) %>% summarise(CohortCount=n())
-
-
-joined_df <- merge(resq_df, resq_clean, by="hospital")
   
-ggplot(joined_df[joined_df$DTNMean < 200 & joined_df$year>=2016,], aes(x = year, y = DTNMean)) + 
+ggplot(resq_df[resq_df$DTNMean < 200 & resq_df$year>=2016,], aes(x = year, y = DTNMean)) + 
   geom_line(aes(color = factor(hospital)), show.legend = FALSE) + 
-  facet_wrap(~ DTNMeanCohort) + 
-  theme_bw() + 
+  facet_wrap(~ firstYear) + 
+  theme_bw() +
+  geom_smooth() +
   scale_color_grey(start = 0.5, end=0.5)
 
-rsqh <- joined_df %>%
-  filter(hospital == "Hospital #101")
+rsqh <- resq_df %>%
+  filter(hospital == "Hospital #103")
 
 ggplot(rsqh[rsqh$DTNMedian<250 & rsqh$DTNMean < 200 & rsqh$year>=2016,], aes(x = year, y = DTNMean)) + 
   geom_line(aes(color = factor(hospital)), show.legend = FALSE) + 
