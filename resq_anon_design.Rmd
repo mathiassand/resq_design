@@ -24,23 +24,22 @@ resq_anon <- read_csv("anon_data_Hendrik.csv")
 resq_clean <- na.omit(resq_anon)
 
 resq_df<-resq_clean %>%
+  #filtering for years after 2015 only, as Mirek told us RES-Q was added in 2016. 
+  #Dataset has a lot of misstypes, or errors? 1900, 2013, 2014 etc.
+  filter(year > 2015) %>%
   group_by(hospital, year) %>%
   summarise(
     DTNMedian=median(DTN),
     DTNMean=mean(DTN),
     AgeMean=mean(age)
-    ) 
+    ) %>% 
+  mutate(
+     DTNMeanCohort = cut(DTNMean, c(0, 30, 45, 60, 120, Inf), labels = c("<30", "30-45", "45-60", "60-120", ">120"))) 
 
-resq_df %<>% 
-   mutate(
-     DTNCohort = cut(DTNMean, c(0, 30, 45, 60, 120, Inf), labels = c("<30", "30-45", "45-60", "60-120", ">120"))
-)
-
-
-#resq_df$groups <- cut(resq_df$DTNMean, breaks=c(0))
+# %>% group_by(DTNMeanCohort) %>% summarise(CohortCount=n())
   
-ggplot(resq_df[resq_df$DTNMedian<250 & resq_df$DTNMean < 200 & resq_df$year>=2016,], aes(x = year, y = DTNMedian)) + 
-  geom_line(aes(color = factor(hospital)), show.legend = FALSE) + geom_smooth()
+ggplot(resq_df[resq_df$DTNMedian<250 & resq_df$DTNMean < 200 & resq_df$year>=2016,], aes(x = year, y = DTNMean)) + 
+  geom_line(aes(color = factor(hospital)), show.legend = FALSE) + facet_wrap(~ DTNMeanCohort)
 
 ```
 
