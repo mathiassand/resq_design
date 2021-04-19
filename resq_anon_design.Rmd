@@ -48,7 +48,6 @@ joined_df <- merge(resq_df, resq_clean, by="hospital")
 ggplot(joined_df[joined_df$DTNMean < 200 & joined_df$year>=2016,], aes(x = year, y = DTNMean)) + 
   geom_line(aes(color = factor(hospital)), show.legend = FALSE) + 
   facet_wrap(~ DTNMeanCohort) + 
-  #geom_smooth() + 
   theme_bw() + 
   scale_color_grey(start = 0.5, end=0.5)
 
