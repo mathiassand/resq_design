@@ -20,50 +20,57 @@ library(reshape2)
 ```{r loadingData, echo=FALSE}
 
 resq_anon <- read_csv("anon_data_Hendrik.csv")
-#need to sort out hospital with only 1 year entry as they dont have any "progress"?
-
-
 
 resq_clean <- na.omit(resq_anon)
+
+resq_mean<-resq_clean %>%
+  group_by(hospital, year) %>%
+  summarise(DTNMean = mean(DTN)) %>% 
+  ungroup()
 
 resq_df<-resq_clean %>%
   #filtering for years after 2015 only, as Mirek told us RES-Q was added in 2016. 
   #Dataset has a lot of misstypes, or errors? 1900, 2013, 2014 etc.
   filter(year > 2015) %>%
-  group_by(hospital, year) %>%
-  summarise(
-    DTNMedian=median(DTN),
-    DTNMean=mean(DTN)
-    ) %>% ungroup() %>%
   group_by(hospital) %>%
-  mutate(firstYear=min(year),
-         lastYear=max(year)) %>% ungroup()
+  summarise(
+    firstYear=min(year),
+    lastYear=max(year)
+    ) %>% 
+  ungroup()
+
+join_df <- merge(resq_df, resq_mean, by="hospital") 
+  
+  
+  # group_by(hospital) %>%
+  # mutate(firstYear=min(year),
+  #        lastYear=max(year)
+  #        ) %>% 
+  # ungroup()
+
+#if starting year = ending year, then we probably shouldn't plot, since they don't have progress?
 
 #cohorts need to be changed to their beginning DTNMean instead, as this will show us
 #where they started, showing us their "story".
+DTN_breaks <- c(-Inf, 30, 45, 60, 120, Inf)
+DTN_break_labels <- c("<30", "30-45", "45-60", "60-120", ">120")
 
-resq_df %<>%
+cohort_df<-join_df %>%
+  ungroup() %>%
   group_by(firstYear) %>%
   mutate(
-    DTNMeanCohort = cut(DTNMean, breaks = c(0, 30, 45, 60, 120, Inf), labels = c("<30", "30-45", "45-60", "60-120", ">120"))
-     ) %>% ungroup()
+    DTNMeanCohort = cut(DTNMean, breaks = DTN_breaks, labels = DTN_break_labels)
+     ) %>% 
+  ungroup()
 
 # %>% group_by(DTNMeanCohort) %>% summarise(CohortCount=n())
   
-ggplot(resq_df[resq_df$DTNMean < 200 & resq_df$year>=2016,], aes(x = year, y = DTNMean)) + 
-  geom_line(aes(color = factor(hospital)), show.legend = FALSE) + 
-  facet_wrap(~ firstYear) + 
-  theme_bw() +
-  geom_smooth() +
-  scale_color_grey(start = 0.5, end=0.5)
 
-rsqh <- resq_df %>%
+rsqh <- cohort_df %>%
   filter(hospital == "Hospital #103")
 
-ggplot(rsqh[rsqh$DTNMedian<250 & rsqh$DTNMean < 200 & rsqh$year>=2016,], aes(x = year, y = DTNMean)) + 
-  geom_line(aes(color = factor(hospital)), show.legend = FALSE) + 
-  theme_bw() + 
-  scale_color_grey(start = 0.5, end=0.5)
+
+
 
 ```
 
@@ -72,6 +79,18 @@ ggplot(rsqh[rsqh$DTNMedian<250 & rsqh$DTNMean < 200 & rsqh$year>=2016,], aes(x =
 You can also embed plots, for example:
 
 ```{r pressure, echo=FALSE}
+ggplot(cohort_df[cohort_df$DTNMean < 200 & cohort_df$year>=2016,], aes(x = year, y = DTNMean)) + 
+  geom_line(aes(color = factor(hospital)), show.legend = FALSE) + 
+  geom_smooth() + 
+  facet_wrap(~ firstYear + lastYear) + 
+  theme_bw() +
+  scale_color_grey(start = 0.5, end=0.5)
+
+
+ggplot(rsqh[rsqh$DTNMedian<250 & rsqh$DTNMean < 200 & rsqh$year>=2016,], aes(x = year, y = DTNMean)) + 
+  geom_line(aes(color = factor(hospital)), show.legend = FALSE) + 
+  theme_bw() + 
+  scale_color_grey(start = 0.5, end=0.5)
 
 ```
 
