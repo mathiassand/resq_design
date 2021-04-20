@@ -39,7 +39,7 @@ resq_df<-resq_clean %>%
     ) %>% 
   ungroup()
 
-join_df <- merge(resq_df, resq_mean, by="hospital") 
+join_df <- merge(resq_df, resq_mean, by="hospital") %>% mutate(runningYear=year-firstYear+1)
   
   
   # group_by(hospital) %>%
@@ -57,7 +57,7 @@ DTN_break_labels <- c("<30", "30-45", "45-60", "60-120", ">120")
 
 cohort_df<-join_df %>%
   ungroup() %>%
-  group_by(firstYear) %>%
+  group_by(runningYear) %>%
   mutate(
     DTNMeanCohort = cut(DTNMean, breaks = DTN_breaks, labels = DTN_break_labels)
      ) %>% 
@@ -79,12 +79,14 @@ rsqh <- cohort_df %>%
 You can also embed plots, for example:
 
 ```{r pressure, echo=FALSE}
-ggplot(cohort_df[cohort_df$DTNMean < 200 & cohort_df$year>=2016,], aes(x = year, y = DTNMean)) + 
-  geom_line(aes(color = factor(hospital)), show.legend = FALSE) + 
-  geom_smooth() + 
-  facet_wrap(~ firstYear + lastYear) + 
+cohort_df %>%
+  filter(DTNMean < 200 & year >= 2016) %>%
+  ggplot(aes(x = year, y = DTNMean)) +
+  geom_line(aes(color = factor(hospital)), show.legend = FALSE) +
+  geom_smooth() +
+  facet_wrap(~ firstYear + lastYear) +
   theme_bw() +
-  scale_color_grey(start = 0.5, end=0.5)
+  scale_color_grey(start = 0.5, end = 0.5)
 
 
 ggplot(rsqh[rsqh$DTNMedian<250 & rsqh$DTNMean < 200 & rsqh$year>=2016,], aes(x = year, y = DTNMean)) + 
