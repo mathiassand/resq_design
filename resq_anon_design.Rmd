@@ -18,68 +18,50 @@ library(reshape2)
 ```
 
 ```{r loadingData, echo=FALSE}
-
 resq_anon <- read_csv("anon_data_Hendrik.csv")
 
 resq_clean <- na.omit(resq_anon)
+```
 
-resq_mean<-resq_clean %>%
+
+
+```{r cohortComparison, echo=FALSE}
+resq_mean <- resq_clean %>%
   group_by(hospital, year) %>%
-  summarise(DTNMean = mean(DTN)) %>% 
+  summarise(DTNMean = mean(DTN)) %>%
   ungroup()
 
-resq_df<-resq_clean %>%
-  #filtering for years after 2015 only, as Mirek told us RES-Q was added in 2016. 
-  #Dataset has a lot of misstypes, or errors? 1900, 2013, 2014 etc.
+resq_df <- resq_clean %>%
+  # filtering for years after 2015 only, as Mirek told us RES-Q was added in 2016.
+  # Dataset has a lot of misstypes, or errors? 1900, 2013, 2014 etc.
   filter(year > 2015) %>%
   group_by(hospital) %>%
   summarise(
-    firstYear=min(year),
-    latestYear=max(year),
-    noOfYears=n_distinct(year)
-    ) %>% 
+    firstYear = min(year),
+    latestYear = max(year),
+    noOfYears = n_distinct(year)
+  ) %>%
   ungroup()
 
-join_df <- merge(resq_df, resq_mean, by="hospital") %>% mutate(runningYear=year-firstYear+1)
-  
-  
-  # group_by(hospital) %>%
-  # mutate(firstYear=min(year),
-  #        lastYear=max(year)
-  #        ) %>% 
-  # ungroup()
+join_df <- merge(resq_df, resq_mean, by = "hospital") %>% mutate(runningYear = year - firstYear + 1)
 
-#if starting year = ending year, then we probably shouldn't plot, since they don't have progress?
-
-#cohorts need to be changed to their beginning DTNMean instead, as this will show us
-#where they started, showing us their "story".
 DTN_breaks <- c(-Inf, 30, 45, 60, 120, Inf)
 DTN_break_labels <- c("<30", "30-45", "45-60", "60-120", ">120")
 
-cohort_df<-join_df %>%
+cohort_df <- join_df %>%
   ungroup() %>%
   group_by(runningYear) %>%
   mutate(
     DTNMeanCohort = cut(DTNMean, breaks = DTN_breaks, labels = DTN_break_labels)
-     ) %>% 
+  ) %>%
   ungroup()
 
 
-cohort_df <- cohort_df %>% 
-  filter(runningYear==1) %>%
-  select(hospital,DTNMeanCohort) %>% 
-  rename(startingDTNMeanCohort=DTNMeanCohort) %>%
+cohort_df <- cohort_df %>%
+  filter(runningYear == 1) %>%
+  select(hospital, DTNMeanCohort) %>%
+  rename(startingDTNMeanCohort = DTNMeanCohort) %>%
   merge(cohort_df)
-
-
-# %>% group_by(DTNMeanCohort) %>% summarise(CohortCount=n())
-  
-
-rsqh <- cohort_df %>%
-  filter(hospital == "Hospital #103")
-
-
-
 
 ```
 
@@ -87,31 +69,93 @@ rsqh <- cohort_df %>%
 
 You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
+```{r cohortPlots, echo=FALSE}
 cohort_df %>%
   ungroup() %>%
-  filter(DTNMean < 200 & year >= 2016 & noOfYears>3) %>%
-  ggplot(aes(x = jitter(runningYear,amount=0.1),colour=startingDTNMeanCohort, y = DTNMean)) +
+  filter(DTNMean < 200 & year >= 2016 & noOfYears > 3) %>%
+  ggplot(aes(x = jitter(runningYear, amount = 0.1), colour = startingDTNMeanCohort, y = DTNMean)) +
   geom_point() +
-  geom_smooth(se=TRUE,alpha=.5) +
+  geom_smooth(se = TRUE, alpha = .5) +
   theme_bw() +
-  coord_cartesian(ylim=c(0, 200))+scale_x_continuous(breaks=seq(1,6,1))
+  coord_cartesian(ylim = c(0, 200)) +
+  scale_x_continuous(breaks = seq(1, 6, 1)) + labs(title="Hospitals, Including 2021")
 
 cohort_df %>%
-     ungroup() %>%
-     filter(DTNMean < 200 & year >= 2016 & year < 2021 & noOfYears>3) %>%
-     ggplot(aes(x = jitter(runningYear,amount=0.1),colour=startingDTNMeanCohort, y = DTNMean)) +
-     geom_point() +
-     geom_smooth(se=TRUE,alpha=.5) +
-     theme_bw() +
-     coord_cartesian(ylim=c(0, 200))+scale_x_continuous(breaks=seq(1,6,1))
+  ungroup() %>%
+  filter(DTNMean < 200 & year >= 2016 & year < 2021 & noOfYears > 3) %>%
+    ggplot(aes(x = jitter(runningYear, amount = 0.1  ), colour = startingDTNMeanCohort, y = DTNMean)) +
+  geom_point(alpha=1/5) +
+  geom_smooth(se = FALSE, alpha = .5) +
+  theme_bw() +
+  coord_cartesian(ylim = c(0, 200)) +
+  scale_x_continuous(breaks = seq(1, 6, 1)) + labs(title="Hospitals, Excluding 2021")
 
-
-ggplot(rsqh[rsqh$DTNMedian<250 & rsqh$DTNMean < 200 & rsqh$year>=2016,], aes(x = year, y = DTNMean)) + 
-  geom_line(aes(color = factor(hospital)), show.legend = FALSE) + 
-  theme_bw() + 
-  scale_color_grey(start = 0.5, end=0.5)
 
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r countryComparison, echo=FALSE}
+resq_country_df <- resq_clean %>%
+  filter(year > 2015) %>%
+  group_by(country) %>%
+  summarise(
+    countryFirstYear = min(year),
+    countryLatestYear = max(year),
+    countryNoOfYears = n_distinct(year),
+    noOfHospitals = n_distinct(hospital)
+  ) %>%
+  ungroup()
+
+resq_country_mean <- resq_clean %>%
+  filter(year > 2015) %>%
+  group_by(country, year) %>%
+  summarise(DTNMeanCountry = mean(DTN), 
+            noOfDTNRecordings = n_distinct(DTN)) %>%
+  ungroup()
+
+country_join_df <- merge(resq_country_df, resq_country_mean, by = "country") %>% mutate(countryRunningYear = year - countryFirstYear + 1)
+
+country_cohort_df <- country_join_df %>%
+  group_by(countryRunningYear) %>%
+  mutate(
+    countryDTNMeanCohort = cut(DTNMeanCountry, breaks = DTN_breaks, labels = DTN_break_labels)
+  ) %>%
+  ungroup()
+
+country_cohort_df <- country_cohort_df %>%
+  filter(countryRunningYear == 1) %>%
+  select(country, countryDTNMeanCohort) %>%
+  rename(countryStartingDTNMeanCohort = countryDTNMeanCohort) %>%
+  merge(country_cohort_df)
+
+
+
+```
+
+```{r countryPlots, echo = FALSE}
+country_cohort_df %>%
+  ungroup() %>%
+  filter(DTNMeanCountry < 200 & year >= 2016 & year < 2021 & countryNoOfYears > 3) %>%
+  ggplot(aes(x = jitter(countryRunningYear, amount = 0.1), colour = countryStartingDTNMeanCohort, y = DTNMeanCountry)) +
+  geom_point() +
+  geom_smooth(se = FALSE, alpha = .5, span = 1) +
+  theme_bw() +
+  coord_cartesian(ylim = c(0, 200)) +
+  scale_x_continuous(breaks = seq(1, 6, 1)) + 
+  labs(title="Country cohorts, including 2021", 
+       subtitle=">120 is starting 4 years in as 1 country in the first three years had a mean DTN of < 200")
+
+
+country_cohort_df %>%
+  ungroup() %>%
+  filter(DTNMeanCountry < 200 & year >= 2016 & year < 2021 & countryNoOfYears > 3) %>%
+  ggplot(aes(x = jitter(countryRunningYear, amount = 0.1), show.legend=F, colour = country, y = DTNMeanCountry)) +
+  geom_point(show.legend=FALSE) +
+  geom_smooth(se = FALSE, alpha = .5, show.legend=FALSE, span = 1) +
+  theme_bw() +
+  coord_cartesian(ylim = c(0, 200)) +
+  scale_x_continuous(breaks = seq(1, 6, 1)) + 
+  labs(title="Countries, including 2021")
+```
+
