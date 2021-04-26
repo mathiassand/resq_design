@@ -117,7 +117,7 @@ cohort_df %>%
 cohort_df %>%
   ungroup() %>%
   filter(DTNMean < 200 & year >= 2016 & year < 2021 & noOfYears > 3, country == "Country #54") %>%
-    ggplot(aes(x = jitter(runningYear, amount = 0.1  ), colour = startingDTNMeanCohort, y = DTNMean)) +
+    ggplot(aes(x = jitter(runningYear, amount = 0.1), colour = startingDTNMeanCohort, y = DTNMean)) +
   geom_point(alpha=1/5) +
   geom_smooth(se = FALSE, alpha = .5) +
   geom_smooth(data = country_mean_df, aes(x = jitter(runningYear, amount = 0.1), colour = countryMean, y=countryMean), se = TRUE, alpha = .5) +
@@ -194,33 +194,5 @@ country_cohort_df %>%
 
 
 
-```{r countryPlotsv2, echo = FALSE}
-country54_hospitals_df<-resq_clean %>%
-  filter(country == "Country #54" & year > 2015) %>%
-  group_by(hospital) %>%
-  summarise(
-    hospitalFirstYear = min(year),
-    
-  )
 
-country54_df<-resq_clean %>%
-  filter(country == "Country #54" & year > 2015) %>%
-  group_by(country) %>%
-  summarise(country54DTNMean = 
-    
-  )
-  
-  
-  resq_country_df <- resq_clean %>%
-  filter(year > 2015) %>%
-  group_by(country) %>%
-  summarise(
-    countryFirstYear = min(year),
-    countryLatestYear = max(year),
-    countryNoOfYears = n_distinct(year),
-    noOfHospitals = n_distinct(hospital)
-  ) %>%
-  ungroup()
-
-```
 
