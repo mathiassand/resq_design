@@ -27,7 +27,7 @@ resq_clean <- na.omit(resq_anon)
 
 ```{r cohortComparison, echo=FALSE}
 resq_mean <- resq_clean %>%
-  group_by(hospital, year) %>%
+  group_by(country, hospital, year) %>%
   summarise(DTNMean = mean(DTN)) %>%
   ungroup()
 
@@ -44,6 +44,14 @@ resq_df <- resq_clean %>%
   ungroup()
 
 join_df <- merge(resq_df, resq_mean, by = "hospital") %>% mutate(runningYear = year - firstYear + 1)
+
+
+
+country_mean_df <- join_df %>%
+  group_by(country, runningYear) %>%
+  filter(country == "Country #54", runningYear >= 1, runningYear <= 5) %>%
+  summarise(countryMean = mean(DTNMean)) %>% ungroup()
+
 
 DTN_breaks <- c(-Inf, 30, 45, 60, 120, Inf)
 DTN_break_labels <- c("<30", "30-45", "45-60", "60-120", ">120")
@@ -79,6 +87,7 @@ cohort_df %>%
   theme_bw() +
   coord_cartesian(ylim = c(0, 200)) +
   scale_x_continuous(breaks = seq(1, 6, 1)) + labs(title="Hospitals, Including 2021")
+  
 
 cohort_df %>%
   ungroup() %>%
@@ -89,11 +98,33 @@ cohort_df %>%
   theme_bw() +
   coord_cartesian(ylim = c(0, 200)) +
   scale_x_continuous(breaks = seq(1, 6, 1)) + labs(title="Hospitals, Excluding 2021")
-
-
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r singleCountryCohortPlot, echo = FALSE}
+cohort_df %>%
+  ungroup() %>%
+  filter(DTNMean < 200 & year >= 2016 & noOfYears > 3 & country == "Country #54") %>%
+  ggplot(aes(x = jitter(runningYear, amount = 0.1), colour = startingDTNMeanCohort, y = DTNMean)) +
+  geom_point() +
+  geom_smooth(se = TRUE, alpha = .5) +
+  geom_smooth(data = country_mean_df, aes(x = jitter(runningYear, amount = 0.1), colour = countryMean, y=countryMean), se = TRUE, alpha = .5) +
+  theme_bw() +
+  coord_cartesian(ylim = c(0, 200)) +
+  scale_x_continuous(breaks = seq(1, 6, 1)) + labs(title="Hospitals in country 54, Including 2021")
+  
+
+cohort_df %>%
+  ungroup() %>%
+  filter(DTNMean < 200 & year >= 2016 & year < 2021 & noOfYears > 3, country == "Country #54") %>%
+    ggplot(aes(x = jitter(runningYear, amount = 0.1  ), colour = startingDTNMeanCohort, y = DTNMean)) +
+  geom_point(alpha=1/5) +
+  geom_smooth(se = FALSE, alpha = .5) +
+  geom_smooth(data = country_mean_df, aes(x = jitter(runningYear, amount = 0.1), colour = countryMean, y=countryMean), se = TRUE, alpha = .5) +
+  theme_bw() +
+  coord_cartesian(ylim = c(0, 200)) +
+  scale_x_continuous(breaks = seq(1, 6, 1)) + labs(title="Hospitals in country 54, Excluding 2021")
+```
 
 ```{r countryComparison, echo=FALSE}
 resq_country_df <- resq_clean %>%
@@ -116,6 +147,11 @@ resq_country_mean <- resq_clean %>%
 
 country_join_df <- merge(resq_country_df, resq_country_mean, by = "country") %>% mutate(countryRunningYear = year - countryFirstYear + 1)
 
+country54_df<-country_join_df %>%
+  filter(country == "Country #54") %>%
+  group_by(country, countryRunningYear) %>%
+  mutate(country54mean = mean(DTNMeanCountry))
+
 country_cohort_df <- country_join_df %>%
   group_by(countryRunningYear) %>%
   mutate(
@@ -128,9 +164,6 @@ country_cohort_df <- country_cohort_df %>%
   select(country, countryDTNMeanCohort) %>%
   rename(countryStartingDTNMeanCohort = countryDTNMeanCohort) %>%
   merge(country_cohort_df)
-
-
-
 ```
 
 ```{r countryPlots, echo = FALSE}
@@ -157,5 +190,37 @@ country_cohort_df %>%
   coord_cartesian(ylim = c(0, 200)) +
   scale_x_continuous(breaks = seq(1, 6, 1)) + 
   labs(title="Countries, including 2021")
+```
+
+
+
+```{r countryPlotsv2, echo = FALSE}
+country54_hospitals_df<-resq_clean %>%
+  filter(country == "Country #54" & year > 2015) %>%
+  group_by(hospital) %>%
+  summarise(
+    hospitalFirstYear = min(year),
+    
+  )
+
+country54_df<-resq_clean %>%
+  filter(country == "Country #54" & year > 2015) %>%
+  group_by(country) %>%
+  summarise(country54DTNMean = 
+    
+  )
+  
+  
+  resq_country_df <- resq_clean %>%
+  filter(year > 2015) %>%
+  group_by(country) %>%
+  summarise(
+    countryFirstYear = min(year),
+    countryLatestYear = max(year),
+    countryNoOfYears = n_distinct(year),
+    noOfHospitals = n_distinct(hospital)
+  ) %>%
+  ungroup()
+
 ```
 
