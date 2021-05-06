@@ -54,6 +54,8 @@ hospital_median_df <- join_df %>%
   summarise(hospitalMedian = mean(DTNMedian)) %>%
   ungroup()
 
+ch_median_df <- merge(country_median_df, hospital_median_df, by = "runningYear")
+
 # VISUAL 2 CUTS, FIRST THREE CUTS ARE BASED ON ANGELS INITITATIVE CUTS, DIVIDED 60-120 FURTHER
 DTN_breaks <- c(-Inf, 30, 45, 60, 80, 90, 100, 120, Inf)
 DTN_break_labels <- c("<30", "30-45", "45-60", "60-80", "80-90", "90-100", "100-120", ">120")

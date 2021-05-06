@@ -1,13 +1,13 @@
 # Define server logic required to draw plots ----
 server <- shinyServer(function(input, output) {
   output$visual1 <- renderPlot(
-    hospital_median_df %>%
+    ch_median_df %>%
       ungroup() %>%
       ggplot(aes(x = runningYear, y = hospitalMedian)) +
       geom_smooth(se = FALSE, alpha = .5, color = "purple") +
       geom_point(shape = 21, color = "purple", fill = "white", size = 5, stroke = 1.7) +
-      geom_smooth(data = country_median_df, aes(x = runningYear, y = countryMedian), se = FALSE, alpha = .5, color = "red") +
-      geom_point(data = country_median_df, aes(x = runningYear, y = countryMedian), shape = 21, color = "red", fill = "white", size = 5, stroke = 1.7) +
+      geom_smooth(aes(y = countryMedian), se = FALSE, alpha = .5, color = "red") +
+      geom_point(aes(y = countryMedian), shape = 21, color = "red", fill = "white", size = 5, stroke = 1.7) +
       theme_classic() +
       coord_cartesian(ylim = c(0, 150)) +
       scale_x_continuous(breaks = seq(1, 6, 1)) +
@@ -23,14 +23,13 @@ server <- shinyServer(function(input, output) {
   )
 
   output$visual2 <- renderPlot(
-    hospital_median_df %>%
-      arrange(hospitalMedian) %>%
+    ch_median_df %>%
       ungroup() %>%
       ggplot(aes(x = runningYear, y = hospitalMedian)) +
       geom_smooth(se = FALSE, alpha = .5, color = "purple") +
       geom_point(shape = 21, color = "purple", fill = "white", size = 5, stroke = 1.7) +
-      geom_smooth(data = country_median_df, aes(x = runningYear, y = countryMedian), se = FALSE, alpha = .5, color = "red") +
-      geom_point(data = country_median_df, aes(x = runningYear, y = countryMedian), shape = 21, color = "red", fill = "white", size = 5, stroke = 1.7) +
+      geom_smooth(aes(y = countryMedian), se = FALSE, alpha = .5, color = "red") +
+      geom_point(aes(y = countryMedian), shape = 21, color = "red", fill = "white", size = 5, stroke = 1.7) +
       geom_smooth(data = cohort_filter_df, aes(x = runningYear, y = cohortMeanofMedian), se = FALSE, alpha = .5, color = "#56B4E9") +
       geom_point(data = cohort_filter_df, aes(x = runningYear, y = cohortMeanofMedian), shape = 21, color = "#56B4E9", fill = "white", size = 5, stroke = 1.7) +
       theme_classic() +
@@ -49,13 +48,13 @@ server <- shinyServer(function(input, output) {
   )
 
   output$visual3 <- renderPlot(
-    hospital_median_df %>%
+    ch_median_df %>%
       ungroup() %>%
       ggplot(aes(x = runningYear, y = hospitalMedian)) +
       geom_smooth(se = FALSE, alpha = .5, color = "purple") +
       geom_point(shape = 21, color = "purple", fill = "white", size = 5, stroke = 1.7) +
-      geom_smooth(data = country_median_df, aes(x = runningYear, y = countryMedian), se = FALSE, alpha = .5, color = "red") +
-      geom_point(data = country_median_df, aes(x = runningYear, y = countryMedian), shape = 21, color = "red", fill = "white", size = 5, stroke = 1.7) +
+      geom_smooth(aes(y = countryMedian), se = FALSE, alpha = .5, color = "red") +
+      geom_point(aes(y = countryMedian), shape = 21, color = "red", fill = "white", size = 5, stroke = 1.7) +
       geom_smooth(data = cohort_filter_df, aes(x = runningYear, y = cohortMeanofMedian), se = FALSE, alpha = .5, color = "#56B4E9") +
       geom_point(data = cohort_filter_df, aes(x = runningYear, y = cohortMeanofMedian), shape = 21, color = "#56B4E9", fill = "white", size = 5, stroke = 1.7) +
       theme_classic() +
