@@ -50,7 +50,7 @@ server <- shinyServer(function(input, output) {
       merge(cohort_df)
     
     cohort_filter_df <- cohort_df %>%
-      filter(startingDTNMedianCohort == "80-100", year == manipulateHospitalData()$year) %>%
+      filter(startingDTNMedianCohort == "80-100", year == mergeCountryHospitalData()$year) %>%
       group_by(year) %>%
       summarise(
         cohortMeanofMedian = mean(DTNMedian)
