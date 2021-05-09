@@ -6,16 +6,13 @@ ui<-navbarPage("RES-Q Open Hospital",
                             selectInput("Select_hospital_ID",
                                         label = "Select Hospital",
                                         choices = sort(unique(resq_clean$hospital)),
-                                        selected = 1,),
-                            selectInput("Select_country_ID",
-                                        label = "Select Country",
-                                        choices = sort(unique(resq_clean$country)),
-                                        selected = 1,),
+                                        selected = 1),
                           
                           ),
                
   
                           mainPanel(column(width = 12, offset = 1,
+                                           textOutput("testText"),
                             plotOutput("visual1", width = "70%", height = "650px"),
                             br(),
                             br(),
@@ -39,7 +36,12 @@ ui<-navbarPage("RES-Q Open Hospital",
                             # br(),
                             # plotlyOutput("visual4", width = "70%", height = "650px")
                           )
+                          
                         )
+                        
     )
+    
   )
+  
 )
+
