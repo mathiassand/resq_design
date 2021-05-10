@@ -44,17 +44,17 @@ server <- shinyServer(function(input, output) {
       rename(startingDTNMedianHospital = DTNMedianHospital) %>%
       merge(hospital_df)
 
-    hospital_end_df <- hospital_df %>%
-      group_by(hospital) %>%
-      filter(runningYear == max(runningYear)) %>%
-      select(hospital, DTNMedianHospital) %>%
-      rename(lastDTNMedianHospital = DTNMedianHospital) %>%
-      merge(hospital_df)
+    # hospital_end_df <- hospital_df %>%
+    #   group_by(hospital) %>%
+    #   filter(runningYear == max(runningYear)) %>%
+    #   select(hospital, DTNMedianHospital) %>%
+    #   rename(lastDTNMedianHospital = DTNMedianHospital) %>%
+    #   merge(hospital_df)
+    # 
+    # merge_start_end <- merge(hospital_start_df, hospital_end_df)
 
-    merge_start_end <- left_join(hospital_start_df, hospital_end_df)
-
-    hospital_median_df <- merge_start_end %>%
-      group_by(hospital, startingDTNMedianHospital, lastDTNMedianHospital, country, runningYear, year) %>%
+    hospital_median_df <- hospital_start_df %>%
+      group_by(hospital, startingDTNMedianHospital, country, runningYear, year) %>%
       filter(hospital == input$Select_hospital_ID) %>%
       summarise(hospitalMedian = median(DTNMedian)) %>%
       ungroup()
@@ -67,65 +67,127 @@ server <- shinyServer(function(input, output) {
 
     country_median_df <- join_df %>%
       group_by(year) %>%
-      filter(country == hospital_median_df$country) %>%
-      summarise(countryMedian = median(DTNMedian)) %>%
+      filter(country == hospital_median_df$country, DTNCount >= 3) %>%
+      summarise(countryMedian = median(DTNMedian), n=n()) %>%
       ungroup()
 
     merged_country_hospital <- merge(country_median_df, hospital_median_df, by = "year")
   })
 
+  manipulateTop5HospitalData <- reactive ({
+    # filter_country_DTNCount <- join_df %>%
+    #   group_by(year) %>%
+    #   filter(country == manipulateHospitalData()$country & DTNCount > 3)
+    
+    top5_cohort_df <- join_df %>%
+      ungroup() %>%
+      group_by(year) %>%
+      filter(country == manipulateHospitalData()$country & DTNCount >= 3) %>%
+      mutate(
+        DTNMedianCohort = cut(DTNMedian, breaks = DTN_breaks, labels = DTN_break_labels)
+      ) %>%
+      ungroup()
+      
 
+    top5_cohort_max_df <- top5_cohort_df %>%
+      filter(year == max(manipulateHospitalData()$year)) %>%
+      select(hospital, DTNMedianCohort) %>%
+      rename(latestDTNMediantop5 = DTNMedianCohort) %>%
+      merge(top5_cohort_df)
+      # 
+      
+
+    
+    top5_filter_df <- top5_cohort_max_df %>%
+      filter(year == manipulateHospitalData()$year) %>%
+      arrange(desc(-DTNMedian)) %>%
+      slice(1:10) %>%
+      group_by(year) %>%
+      summarise(
+        cohortMeanofMedian = median(DTNMedian),
+        n = n()
+      )
+
+  })
 
 
   manipulateCohortData <- reactive({
     cohort_df <- join_df %>%
       ungroup() %>%
-      group_by(runningYear) %>%
+      group_by(year) %>%
       mutate(
         DTNMedianCohort = cut(DTNMedian, breaks = DTN_breaks, labels = DTN_break_labels)
       ) %>%
       ungroup()
 
-    condition1_start <- cohort_df %>%
-      group_by(hospital) %>%
-      filter(runningYear == min(runningYear)) %>%
+    cohort_start <- cohort_df %>%
+      filter(runningYear == 2) %>%
       select(hospital, DTNMedianCohort) %>%
       rename(startingDTNMedianCohort = DTNMedianCohort) %>%
-      merge(cohort_df) %>%
-      ungroup()
+      merge(cohort_df) 
 
-    condition1_end <- cohort_df %>%
-      group_by(hospital) %>%
-      filter(runningYear == max(runningYear)) %>%
-      select(hospital, DTNMedianCohort) %>%
-      rename(lastDTNMedianCohort = DTNMedianCohort) %>%
-      merge(cohort_df) %>%
-      ungroup()
-
-    merge_condition1 <- left_join(condition1_start, condition1_end)
-
-    merge_condition1 <- merge_condition1 %>%
-      filter(
-        year == manipulateHospitalData()$year &
-          startingDTNMedianCohort == manipulateHospitalData()$startingDTNMedianHospital
-      )
     
-    cohort_filter_df <- merge_condition1 %>%
-      filter(lastDTNMedianCohort == "<30") %>%
-      group_by(year, startingDTNMedianCohort) %>%
+    cohort_filter_df <- cohort_start %>%
+      filter(startingDTNMedianCohort == manipulateHospitalData()$startingDTNMedianHospital & year == manipulateHospitalData()$year) %>%
+      group_by(year) %>%
       summarise(
-        cohortMeanofMedian = mean(DTNMedian)
+        cohortMeanofMedian = mean(DTNMedian),
+        n = n()
       )
+
+
+    # condition1_end <- cohort_df %>%
+    #   #group_by(hospital) %>%
+    #   filter(runningYear == max(runningYear)) %>%
+    #   select(hospital, DTNMedianCohort) %>%
+    #   rename(lastDTNMedianCohort = DTNMedianCohort) %>%
+    #   merge(cohort_df)
+    
+    #condition1_end
+
+    #merge_condition1 <- merge(condition1_start, condition1_end)
+
+    # condition1_end <- condition1_end %>%
+    #   filter(
+    #     year == manipulateHospitalData()$year 
+    #     #startingDTNMedianCohort == manipulateHospitalData()$startingDTNMedianHospital
+    #   )
+    
+    # condition1_start <- condition1_start %>%
+    #   filter(
+    #     year == manipulateHospitalData()$year 
+    #     #startingDTNMedianCohort == manipulateHospitalData()$startingDTNMedianHospital
+    #   )
+
+    # cohort_filter_df <- condition1_start %>%
+    #   filter(runningYear == 1) %>%
+    #   select(hospital, DTNMedianCohort) %>%
+    #   rename(startingDTNMedianCohort = DTNMedianCohort) %>%
+    #   merge(condition1_start)
+
+
+
+
+    
+    # cohort_filter_df <- merge_condition1 %>%
+    #   filter(lastDTNMedianCohort <= manipulateHospitalData()$lastDTNMedianHospital & year == manipulateHospitalData()$year) %>%
+    #   group_by(year) %>%
+    #   summarise(
+    #     cohortMeanofMedian = mean(DTNMedian)
+    #   )
+    # browser()
+    
+
 
 
     # can add more statements: we probably want to have something like 2 first years of cohort to match 2 first of hospital
     # and then have hospitals above or equal to 4 maxRunningYears have the 2 last years be different from the cohorts (with cohort have more improvement)
     # if (manipulateHospitalData()$maxRunningYear >= 2) {
     #       filter(lastDTNMedianCohort == "<30") %>%
-      #       group_by(year, startingDTNMedianCohort) %>%
-      #       summarise(
-      #         cohortMeanofMedian = mean(DTNMedian)
-      # )
+    #       group_by(year, startingDTNMedianCohort) %>%
+    #       summarise(
+    #         cohortMeanofMedian = mean(DTNMedian)
+    # )
     # }
     # else if (manipulateHospitalData()$maxRunningYear == 3) {
     #   cohort_filter_df <- merge_condition1 %>%
@@ -135,10 +197,10 @@ server <- shinyServer(function(input, output) {
     #       cohortMeanofMedian = mean(DTNMedian)
     #     )
     # }
-    # else if (manipulateHospitalData()$maxRunningYear >= 4) {
+    # if (manipulateHospitalData()$maxRunningYear >= 4) {
     #   cohort_filter_df <- merge_condition1 %>%
-    #     filter(lastDTNMedianCohort == "<30") %>%
-    #     group_by(year, startingDTNMedianCohort) %>%
+    #     filter(runningYear == max(runningYear)) %>%
+    #     group_by(year, lastDTNMedianCohort) %>%
     #     summarise(
     #       cohortMeanofMedian = mean(DTNMedian)
     #     )
@@ -182,7 +244,7 @@ server <- shinyServer(function(input, output) {
       ggplot(aes(x = year, y = hospitalMedian)) +
       geom_line(color = "#56B4E9", size = 2) +
       theme_classic() +
-      coord_cartesian(ylim = c(0, 150)) +
+      expandy(manipulateHospitalData()$DTNMedian, 0) +
       scale_x_continuous(breaks = manipulateHospitalData()$year) +
       labs(
         title = "<span style = 'color: #56B4E9;'>Your hospital</span>",
@@ -202,7 +264,7 @@ server <- shinyServer(function(input, output) {
       geom_line(color = "#56B4E9", size = 2) +
       geom_line(aes(y = countryMedian), color = "#F8766D", size = 2) +
       theme_classic() +
-      coord_cartesian(ylim = c(0, 150)) +
+      expandy(manipulateHospitalData()$DTNMedian, 0) +
       scale_x_continuous(breaks = manipulateHospitalData()$year) +
       labs(
         title = "<span style = 'color: #56B4E9;'>Your hospital</span>compared to the <span style = 'color: #F8766D;'>national median</span>",
@@ -222,8 +284,10 @@ server <- shinyServer(function(input, output) {
       geom_line(color = "#56B4E9", size = 2) +
       geom_line(aes(y = countryMedian), color = "#F8766D", size = 2) +
       geom_line(data = manipulateCohortData(), aes(x = year, y = cohortMeanofMedian), color = "#FFC300", size = 2) +
+      geom_line(data = manipulateTop5HospitalData(), aes(x = year, y = cohortMeanofMedian), color = "black", size = 2) +
       theme_classic() +
-      coord_cartesian(ylim = c(0, 150)) +
+      expandy(manipulateHospitalData()$DTNMedian, 0) +
+      #coord_cartesian(ylim = c(0, manipulateHospitalData()$DTNMedian)) +
       scale_x_continuous(breaks = manipulateHospitalData()$year) +
       labs(
         title = "<span style = 'color: #56B4E9;'>Your hospital</span> compared to the <span style = 'color: #F8766D;'>national median</span>
