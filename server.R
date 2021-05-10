@@ -261,8 +261,8 @@ server <- shinyServer(function(input, output) {
     manipulateHospitalData() %>%
       ungroup() %>%
       ggplot(aes(x = year, y = hospitalMedian)) +
-      geom_line(color = "#56B4E9", size = 2) +
       geom_line(aes(y = countryMedian), color = "#F8766D", size = 2) +
+      geom_line(color = "#56B4E9", size = 2) +
       theme_classic() +
       expandy(manipulateHospitalData()$DTNMedian, 0) +
       scale_x_continuous(breaks = manipulateHospitalData()$year) +
@@ -281,10 +281,9 @@ server <- shinyServer(function(input, output) {
     manipulateHospitalData() %>%
       ungroup() %>%
       ggplot(aes(x = year, y = hospitalMedian)) +
-      geom_line(color = "#56B4E9", size = 2) +
       geom_line(aes(y = countryMedian), color = "#F8766D", size = 2) +
       geom_line(data = manipulateCohortData(), aes(x = year, y = cohortMeanofMedian), color = "#FFC300", size = 2) +
-      geom_line(data = manipulateTop5HospitalData(), aes(x = year, y = cohortMeanofMedian), color = "black", size = 2) +
+      geom_line(color = "#56B4E9", size = 2) +
       theme_classic() +
       expandy(manipulateHospitalData()$DTNMedian, 0) +
       #coord_cartesian(ylim = c(0, manipulateHospitalData()$DTNMedian)) +
@@ -301,19 +300,28 @@ server <- shinyServer(function(input, output) {
       )
   )
 
-  # output$visual4 <- renderPlotly(
-  #     plot_ly(
-  #       type = "scatter",
-  #       mode = "markers",
-  #       data = cohort_filter_df, x = ~runningYear, y = ~DTNMean
-  #       # colors = pal,
-  #     ) %>% config(
-  #       displayModeBar = F
-  #     ) %>%
-  #       layout(
-  #         xaxis = list(title = "xaxis", fixedrange=TRUE),
-  #         yaxis = list(title = "yaxis", fixedrange=TRUE),
-  #         legend = list(orientation = "h")
-  #       )
-  # )
+  output$visual4 <- renderPlot(
+      manipulateHospitalData() %>%
+        ungroup() %>%
+        ggplot(aes(x = year, y = hospitalMedian)) +
+        geom_line(aes(y = countryMedian), color = "#F8766D", size = 2) +
+        geom_line(data = manipulateCohortData(), aes(x = year, y = cohortMeanofMedian), color = "#FFC300", size = 2) +
+        geom_line(data = manipulateTop5HospitalData(), aes(x = year, y = cohortMeanofMedian), color = "black", size = 2) +
+        geom_line(color = "#56B4E9", size = 2) +
+        theme_classic() +
+        expandy(manipulateHospitalData()$DTNMedian, 0) +
+        #coord_cartesian(ylim = c(0, manipulateHospitalData()$DTNMedian)) +
+        scale_x_continuous(breaks = manipulateHospitalData()$year) +
+        labs(
+          title = "<span style = 'color: #56B4E9;'>Your hospital</span> compared to the <span style = 'color: #F8766D;'>national median</span>
+        and a <span style = 'color: #FFC300;'>group of hospitals</span> similar to your start in RES-Q",
+          y = "Median DTN", x = "Years in RES-Q"
+        ) +
+        theme(
+          plot.title = element_markdown(size = 15),
+          axis.title.x = element_text(hjust = .05, vjust = 0.2),
+          axis.title.y = element_text(hjust = 0.95, vjust = 0.9)
+        )
+    )
+  
 })

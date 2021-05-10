@@ -12,7 +12,6 @@ ui<-navbarPage("RES-Q Open Hospital",
                
   
                           mainPanel(column(width = 12, offset = 1,
-                                           textOutput("testText"),
                             plotOutput("visual1", width = "70%", height = "650px"),
                             br(),
                             br(),
@@ -28,13 +27,13 @@ ui<-navbarPage("RES-Q Open Hospital",
                             br(),
                             br(),
                             plotOutput("visual3", width = "70%", height = "650px"),
-                            # br(),
-                            # br(),
-                            # br(),
-                            # br(),
-                            # br(),
-                            # br(),
-                            # plotlyOutput("visual4", width = "70%", height = "650px")
+                            br(),
+                            br(),
+                            br(),
+                            br(),
+                            br(),
+                            br(),
+                            plotOutput("visual4", width = "70%", height = "650px")
                           )
                           
                         )
