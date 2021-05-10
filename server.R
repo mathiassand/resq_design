@@ -74,12 +74,12 @@ server <- shinyServer(function(input, output) {
     merged_country_hospital <- merge(country_median_df, hospital_median_df, by = "year")
   })
 
-  manipulateTop5HospitalData <- reactive ({
+  manipulateTop10HospitalData <- reactive ({
     # filter_country_DTNCount <- join_df %>%
     #   group_by(year) %>%
     #   filter(country == manipulateHospitalData()$country & DTNCount > 3)
     
-    top5_cohort_df <- join_df %>%
+    top10_cohort_df <- join_df %>%
       ungroup() %>%
       group_by(year) %>%
       filter(country == manipulateHospitalData()$country & DTNCount >= 3) %>%
@@ -89,16 +89,16 @@ server <- shinyServer(function(input, output) {
       ungroup()
       
 
-    top5_cohort_max_df <- top5_cohort_df %>%
+    top10_cohort_max_df <- top10_cohort_df %>%
       filter(year == max(manipulateHospitalData()$year)) %>%
       select(hospital, DTNMedianCohort) %>%
-      rename(latestDTNMediantop5 = DTNMedianCohort) %>%
-      merge(top5_cohort_df)
+      rename(latestDTNMediantop10 = DTNMedianCohort) %>%
+      merge(top10_cohort_df)
       # 
       
 
     
-    top5_filter_df <- top5_cohort_max_df %>%
+    top10_filter_df <- top10_cohort_max_df %>%
       filter(year == manipulateHospitalData()$year) %>%
       arrange(desc(-DTNMedian)) %>%
       slice(1:10) %>%
@@ -306,7 +306,7 @@ server <- shinyServer(function(input, output) {
         ggplot(aes(x = year, y = hospitalMedian)) +
         geom_line(aes(y = countryMedian), color = "#F8766D", size = 2) +
         geom_line(data = manipulateCohortData(), aes(x = year, y = cohortMeanofMedian), color = "#FFC300", size = 2) +
-        geom_line(data = manipulateTop5HospitalData(), aes(x = year, y = cohortMeanofMedian), color = "black", size = 2) +
+        geom_line(data = manipulateTop10HospitalData(), aes(x = year, y = cohortMeanofMedian), color = "black", size = 2) +
         geom_line(color = "#56B4E9", size = 2) +
         theme_classic() +
         expandy(manipulateHospitalData()$DTNMedian, 0) +
