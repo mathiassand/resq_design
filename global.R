@@ -35,8 +35,8 @@ join_df <- join_df %>%
     maxRunningYear = max(runningYear)
   ) %>% ungroup()
 
-DTN_breaks <- c(-Inf, 30, 45, 60, 80, 90, 100, 120, Inf)
-DTN_break_labels <- c("<30", "30-45", "45-60", "60-80", "80-90", "90-100", "100-120", ">120")
+DTN_breaks <- c(-Inf, 15, 25, 30, 45, 60, 80, 90, 100, 120, Inf)
+DTN_break_labels <- c("<15", "15-25", "25-30", "30-45", "45-60", "60-80", "80-90", "90-100", "100-120", ">120")
 
 
 #GGPLOT

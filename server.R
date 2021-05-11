@@ -120,19 +120,20 @@ server <- shinyServer(function(input, output) {
       ungroup()
 
     cohort_start <- cohort_df %>%
-      filter(runningYear == 1, country == manipulateHospitalData()$country) %>%
+      filter(year == min(year) & country == manipulateHospitalData()$country & year == manipulateHospitalData()$year) %>%
       select(hospital, DTNMedianCohort) %>%
       rename(startingDTNMedianCohort = DTNMedianCohort) %>%
       merge(cohort_df) 
-
+   # browser()
     
     cohort_filter_df <- cohort_start %>%
-      filter(startingDTNMedianCohort == manipulateHospitalData()$startingDTNMedianHospital & year == manipulateHospitalData()$year) %>%
+      filter(startingDTNMedianCohort == manipulateHospitalData()$startingDTNMedianHospital ) %>%
       group_by(year) %>%
       summarise(
         cohortMeanofMedian = mean(DTNMedian),
         n = n()
       )
+   # browser()
 
   })
 
