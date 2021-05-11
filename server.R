@@ -26,8 +26,6 @@ server <- shinyServer(function(input, output) {
   })
 
 
-
-
   manipulateHospitalData <- reactive({
     hospital_df <- join_df %>%
       ungroup() %>%
@@ -265,7 +263,6 @@ server <- shinyServer(function(input, output) {
   # }) 
   
   grob_x <- 0.50
-  grob_y <- 0.15
   hospital_c <- "#39AEC6"
   country_c <- "#C37165"
   top10_c <- "#9F65C3"

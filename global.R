@@ -1,21 +1,13 @@
 library(tidyverse)
-library(tibble)
-library(skimr)
-library(magrittr)
-library(purrr)
-library(ggtext)
 library(grid)
-library(ggrepel)
+library(ggtext)
 library(directlabels)
-library(reshape2)
 library(shiny)
 library(plotly)
 
 resq_anon <- read_csv("anon_data_Hendrik.csv")
 
 resq_clean <- na.omit(resq_anon)
-
-# colors<-c("Hospital" = "#56B4E9", "National" = "#F8766D", "Cohort" = "#FFC300")
 
 resq_median <- resq_clean %>%
   group_by(country, hospital, year) %>%
@@ -56,13 +48,3 @@ expandy = function(vec, ymin=NULL) {
   
   expand_limits(y=c(ymin, ceiling(max.val/10^min.log)*10^min.log))
 }
-
-
-
-
-
-# DTN_breaks <- c(-Inf, 30, 45, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, Inf)
-# DTN_break_labels <- c(
-#   "<30", "30-45", "45-60", "60-80", "80-100", "100-120", "120-140",
-#   "140-160", "160-180", "180-200", "200-220", "220-240", ">240"
-# )
