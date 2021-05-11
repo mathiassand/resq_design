@@ -46,6 +46,9 @@ join_df <- join_df %>%
 DTN_breaks <- c(-Inf, 30, 45, 60, 80, 90, 100, 120, Inf)
 DTN_break_labels <- c("<30", "30-45", "45-60", "60-80", "80-90", "90-100", "100-120", ">120")
 
+
+#GGPLOT
+
 expandy = function(vec, ymin=NULL) {
   
   max.val = max(vec, na.rm=TRUE)
@@ -53,6 +56,10 @@ expandy = function(vec, ymin=NULL) {
   
   expand_limits(y=c(ymin, ceiling(max.val/10^min.log)*10^min.log))
 }
+
+
+
+
 
 # DTN_breaks <- c(-Inf, 30, 45, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, Inf)
 # DTN_break_labels <- c(

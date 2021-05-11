@@ -6,7 +6,7 @@ ui<-navbarPage("RES-Q Open Hospital",
                             selectInput("Select_hospital_ID",
                                         label = "Select Hospital",
                                         choices = sort(unique(resq_clean$hospital)),
-                                        selected = 1),
+                                        selected = "Hospital #103"),
                           
                           ),
                

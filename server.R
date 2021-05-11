@@ -68,10 +68,11 @@ server <- shinyServer(function(input, output) {
     country_median_df <- join_df %>%
       group_by(year) %>%
       filter(country == hospital_median_df$country, DTNCount >= 3) %>%
-      summarise(countryMedian = median(DTNMedian), n=n()) %>%
+      summarise(countryMedian = median(DTNMedian), country_n=n()) %>%
       ungroup()
 
     merged_country_hospital <- merge(country_median_df, hospital_median_df, by = "year")
+ 
   })
 
   manipulateTop10HospitalData <- reactive ({
@@ -94,7 +95,6 @@ server <- shinyServer(function(input, output) {
       select(hospital, DTNMedianCohort) %>%
       rename(latestDTNMediantop10 = DTNMedianCohort) %>%
       merge(top10_cohort_df)
-      # 
       
 
     
@@ -104,9 +104,10 @@ server <- shinyServer(function(input, output) {
       slice(1:10) %>%
       group_by(year) %>%
       summarise(
-        cohortMeanofMedian = median(DTNMedian),
-        n = n()
+        top10Median = median(DTNMedian),
+        top10_n = n()
       )
+  top10_filter_df <- merge(top10_filter_df, manipulateHospitalData(), by = "year")
 
   })
 
@@ -121,7 +122,7 @@ server <- shinyServer(function(input, output) {
       ungroup()
 
     cohort_start <- cohort_df %>%
-      filter(runningYear == 2) %>%
+      filter(runningYear == 1, country == manipulateHospitalData()$country) %>%
       select(hospital, DTNMedianCohort) %>%
       rename(startingDTNMedianCohort = DTNMedianCohort) %>%
       merge(cohort_df) 
@@ -135,6 +136,7 @@ server <- shinyServer(function(input, output) {
         n = n()
       )
 
+  })
 
     # condition1_end <- cohort_df %>%
     #   #group_by(hospital) %>%
@@ -228,7 +230,7 @@ server <- shinyServer(function(input, output) {
     # if(manipulateHospitalData()$maxRunningYear <= 2) {
     #
     # }
-  })
+  
 
 
 
@@ -237,91 +239,148 @@ server <- shinyServer(function(input, output) {
   #   str_patientcount<-({paste("Number of patients with Ischemic Stroke:", manipulateStatusData()$patient_count)})
   #   str_DTNpatientcount<-({paste("Number of DTN recorded for patients with Ischemic Stroke:", manipulateStatusData()$DTNCount)})
   # })
+  
+  
+  # output$visual1 <- renderPlotly({
+  #   p<-ggplot(manipulateHospitalData(), aes(x = year, y = hospitalMedian)) +
+  #     geom_line(color = hospital_c, size = 2) +
+  #     geom_point(shape = 21, color = hospital_c, fill = "white", size = 5.5, stroke = 1.7) +
+  #     #theme_classic() +
+  #     expandy(manipulateHospitalData()$DTNMedian, 0) +
+  #     scale_x_continuous(breaks = manipulateHospitalData()$year) +
+  #     labs(
+  #       title = "<span style = 'color: grey50;'>Yearly median door-to-needle progress</span>",
+  #       y = "Median DTN", x = "Years in RES-Q"
+  #     ) +
+  #     theme(
+  #       plot.title = element_markdown(size = 20),
+  #       axis.title.x = element_text(hjust = .035, vjust = 0.2, color = "grey50"),
+  #       axis.title.y = element_text(hjust = 0.95, vjust = 0.9, color = "grey50"),
+  #       panel.background = element_rect(fill = "white", color = "grey50")
+  #     ) + annotation_custom(hospitalText)
+  #   
+  #   p <- ggplotly(p)
+  #   p
+  #   #geom_text(aes(label = round(hospitalMedian), color = "#56B4E9", nudge_y = 0.8))
+  # }) 
+  
+  grob_x <- 0.50
+  grob_y <- 0.15
+  hospital_c <- "#39AEC6"
+  country_c <- "#C37165"
+  top10_c <- "#9F65C3"
+  cohort_c <- "#88C365"
+  title_plots <- "<span style = 'color: grey50;'>Door-to-needle time (DTN) progress in minutes</span>"
+  
+  
+  hospitalText <- grobTree(textGrob("hospital", x = grob_x, y = 0.30, hjust = 0, gp = gpar(col = hospital_c, fontsize = 18, fontface = "bold")))
+  countryText <- grobTree(textGrob("country", x = grob_x, y = 0.25, hjust = 0, gp = gpar(col = country_c, fontsize = 18, fontface = "bold")))
+  cohortText <- grobTree(textGrob("similar DTN to your hospital's\nfirst year in RES-Q within your country", x = grob_x, y = 0.175, hjust = 0, gp = gpar(col = cohort_c, fontsize = 18, fontface = "bold")))
+  top10Text <- grobTree(textGrob("current best DTN within your country", x = grob_x, y = 0.1, hjust = 0, gp = gpar(col = top10_c, fontsize = 18, fontface = "bold")))
+  medianHospitalText <- grobTree(textGrob("Median of hospitals with:", x = 0.24, y = 0.2, hjust = 0, gp = gpar(col = "grey50", fontsize = 18)))
+  yourText <- grobTree(textGrob("Your:", x = 0.44, y = 0.3, hjust = 0, gp = gpar(col = "grey50", fontsize = 18)))
 
-  output$visual1 <- renderPlot(
+  
+  
+  output$visual1 <- renderPlot({
     manipulateHospitalData() %>%
       ungroup() %>%
       ggplot(aes(x = year, y = hospitalMedian)) +
-      geom_line(color = "#56B4E9", size = 2) +
-      theme_classic() +
+      geom_line(color = hospital_c, size = 2) +
+      geom_point(shape = 21, color = hospital_c, fill = "white", size = 5.5, stroke = 1.7) +
+      #theme_classic() +
       expandy(manipulateHospitalData()$DTNMedian, 0) +
       scale_x_continuous(breaks = manipulateHospitalData()$year) +
       labs(
-        title = "<span style = 'color: #56B4E9;'>Your hospital</span>",
+        title = title_plots,
         y = "Median DTN", x = "Years in RES-Q"
       ) +
       theme(
         plot.title = element_markdown(size = 20),
-        axis.title.x = element_text(hjust = .05, vjust = 0.2),
-        axis.title.y = element_text(hjust = 0.95, vjust = 0.9)
-      ) #+ scale_color_manual(name="Text", values = colors)
-  )
+        axis.title.x = element_text(hjust = .035, vjust = 0.2, color = "grey50"),
+        axis.title.y = element_text(hjust = 0.95, vjust = 0.9, color = "grey50"),
+        panel.background = element_rect(fill = "white", color = "grey50")
+      ) + annotation_custom(hospitalText) + annotation_custom(yourText)
+    
+      #geom_text(aes(label = round(hospitalMedian), color = "#56B4E9", nudge_y = 0.8))
+  }) 
 
   output$visual2 <- renderPlot(
     manipulateHospitalData() %>%
       ungroup() %>%
       ggplot(aes(x = year, y = hospitalMedian)) +
-      geom_line(aes(y = countryMedian), color = "#F8766D", size = 2) +
-      geom_line(color = "#56B4E9", size = 2) +
+      geom_line(aes(y = countryMedian), color = country_c, size = 2) +
+      geom_point(aes(y = countryMedian), shape = 21, color = country_c, fill = "white", size = 5.5, stroke = 1.7) +
+      geom_line(color = hospital_c, size = 2) +
+      geom_point(shape = 21, color = hospital_c, fill = "white", size = 5.5, stroke = 1.7) +
       theme_classic() +
       expandy(manipulateHospitalData()$DTNMedian, 0) +
       scale_x_continuous(breaks = manipulateHospitalData()$year) +
       labs(
-        title = "<span style = 'color: #56B4E9;'>Your hospital</span>compared to the <span style = 'color: #F8766D;'>national median</span>",
-        y = "Median DTN", x = "Years in RES-Q", color = "Legend"
+        title = title_plots,
+        y = "Median DTN", x = "Years in RES-Q"
       ) +
       theme(
         plot.title = element_markdown(size = 20),
-        axis.title.x = element_text(hjust = .05, vjust = 0.2),
-        axis.title.y = element_text(hjust = 0.95, vjust = 0.9)
-      )
+        axis.title.x = element_text(hjust = .035, vjust = 0.2, color = "grey50"),
+        axis.title.y = element_text(hjust = 0.95, vjust = 0.9, color = "grey50"),
+        panel.background = element_rect(fill = "white", color = "grey50")
+      ) +
+      annotation_custom(hospitalText) + annotation_custom(countryText) + annotation_custom(yourText)
   )
 
   output$visual3 <- renderPlot(
     manipulateHospitalData() %>%
       ungroup() %>%
       ggplot(aes(x = year, y = hospitalMedian)) +
-      geom_line(aes(y = countryMedian), color = "#F8766D", size = 2) +
-      geom_line(data = manipulateCohortData(), aes(x = year, y = cohortMeanofMedian), color = "#FFC300", size = 2) +
-      geom_line(color = "#56B4E9", size = 2) +
+      geom_line(aes(y = countryMedian), color = country_c, size = 2) +
+      geom_point(aes(y = countryMedian), shape = 21, color = country_c, fill = "white", size = 5.5, stroke = 1.7) +
+      geom_line(data = manipulateCohortData(), aes(x = year, y = cohortMeanofMedian), color = cohort_c, size = 2) +
+      geom_point(data = manipulateCohortData(), aes(x = year, y = cohortMeanofMedian), shape = 21, color = cohort_c, fill = "white", size = 5.5, stroke = 1.7) +
+      geom_line(color = hospital_c, size = 2) +
+      geom_point(shape = 21, color = hospital_c, fill = "white", size = 5.5, stroke = 1.7) +
       theme_classic() +
       expandy(manipulateHospitalData()$DTNMedian, 0) +
-      #coord_cartesian(ylim = c(0, manipulateHospitalData()$DTNMedian)) +
       scale_x_continuous(breaks = manipulateHospitalData()$year) +
       labs(
-        title = "<span style = 'color: #56B4E9;'>Your hospital</span> compared to the <span style = 'color: #F8766D;'>national median</span>
-        and a <span style = 'color: #FFC300;'>group of hospitals</span> similar to your start in RES-Q",
+        title = title_plots,
         y = "Median DTN", x = "Years in RES-Q"
       ) +
       theme(
-        plot.title = element_markdown(size = 15),
-        axis.title.x = element_text(hjust = .05, vjust = 0.2),
-        axis.title.y = element_text(hjust = 0.95, vjust = 0.9)
-      )
+        plot.title = element_markdown(size = 20),
+        axis.title.x = element_text(hjust = .035, vjust = 0.2, color = "grey50"),
+        axis.title.y = element_text(hjust = 0.95, vjust = 0.9, color = "grey50"),
+        panel.background = element_rect(fill = "white", color = "grey50")
+      ) +
+      annotation_custom(hospitalText) + annotation_custom(countryText) + annotation_custom(cohortText)+ annotation_custom(medianHospitalText) + annotation_custom(yourText)
   )
 
   output$visual4 <- renderPlot(
       manipulateHospitalData() %>%
         ungroup() %>%
         ggplot(aes(x = year, y = hospitalMedian)) +
-        geom_line(aes(y = countryMedian), color = "#F8766D", size = 2) +
-        geom_line(data = manipulateCohortData(), aes(x = year, y = cohortMeanofMedian), color = "#FFC300", size = 2) +
-        geom_line(data = manipulateTop10HospitalData(), aes(x = year, y = cohortMeanofMedian), color = "black", size = 2) +
-        geom_line(color = "#56B4E9", size = 2) +
+        geom_line(aes(y = countryMedian), color = country_c, size = 2) +
+        geom_point(aes(y = countryMedian), shape = 21, color = country_c, fill = "white", size = 5.5, stroke = 1.7) +
+        geom_line(data = manipulateCohortData(), aes(x = year, y = cohortMeanofMedian), color = cohort_c, size = 2) +
+        geom_point(data = manipulateCohortData(), aes(x = year, y = cohortMeanofMedian), shape = 21, color = cohort_c, fill = "white", size = 5.5, stroke = 1.7) +
+        geom_line(data = manipulateTop10HospitalData(), aes(x = year, y = top10Median), color = top10_c, size = 2) +
+        geom_point(data = manipulateTop10HospitalData(), aes(x = year, y = top10Median), shape = 21, color = top10_c, fill = "white", size = 5.5, stroke = 1.7) +
+        geom_line(color = hospital_c, size = 2) +
+        geom_point(shape = 21, color = hospital_c, fill = "white", size = 5.5, stroke = 1.7) +
+
         theme_classic() +
         expandy(manipulateHospitalData()$DTNMedian, 0) +
-        #coord_cartesian(ylim = c(0, manipulateHospitalData()$DTNMedian)) +
         scale_x_continuous(breaks = manipulateHospitalData()$year) +
         labs(
-          title = "<span style = 'color: #56B4E9;'>Your hospital</span> compared to the <span style = 'color: #F8766D;'>national median</span>
-        and a <span style = 'color: #FFC300;'>group of hospitals</span> similar to your start in RES-Q",
+          title = title_plots,
           y = "Median DTN", x = "Years in RES-Q"
         ) +
         theme(
-          plot.title = element_markdown(size = 15),
-          axis.title.x = element_text(hjust = .05, vjust = 0.2),
-          axis.title.y = element_text(hjust = 0.95, vjust = 0.9)
-        )
+          plot.title = element_markdown(size = 20),
+          axis.title.x = element_text(hjust = .035, vjust = 0.2, color = "grey50"),
+          axis.title.y = element_text(hjust = 0.95, vjust = 0.9, color = "grey50"),
+          panel.background = element_rect(fill = "white", color = "grey50")
+        ) + annotation_custom(hospitalText) + annotation_custom(countryText) + annotation_custom(cohortText) + annotation_custom(top10Text)+ annotation_custom(medianHospitalText) + annotation_custom(yourText)
     )
   
 })
