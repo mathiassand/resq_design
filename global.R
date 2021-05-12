@@ -1,6 +1,7 @@
 library(tidyverse)
 library(grid)
 library(ggtext)
+library(ggrepel)
 library(directlabels)
 library(shiny)
 library(plotly)
@@ -48,3 +49,24 @@ expandy = function(vec, ymin=NULL) {
   
   expand_limits(y=c(ymin, ceiling(max.val/10^min.log)*10^min.log))
 }
+
+fontSize <- 12
+hospital_c <- "#39AEC6"
+country_c <- "#C37165"
+top10_c <- "#9F65C3"
+cohort_c <- "#88C365"
+
+title_plot1 <- "<span style = 'color: grey50;'>Your hospital</span>"
+title_plot2 <- "<span style = 'color: grey50;'>Your hospital compared to your country</span>"
+title_plot3 <- "<span style = 'color: grey50;'>Your hospital compared to hospitals with similar starting year DTN as you</span>"
+title_plot4 <- "<span style = 'color: grey50;'>Your hospital compared to hospitals with best DTN in the current year</span>"
+title_plot5 <- "<span style = 'color: grey50;'>Summary of comparisons</span>"
+subtitle_plot1 <- "<span style = 'color: grey50;'>Door-to-needle time (DTN) progress</span>"
+subtitle_plots <- "<span style = 'color: grey50;'>Door-to-needle time (DTN) progress within your country</span>"
+
+hospitalLabel <- "hospital"
+countryLabel <- "country"
+cohortLabel <- "similar hospitals"
+top10Label <- "best DTN hospitals"
+cohortSummaryLabel <- "hospitals with similar\nstarting year DTN as you"
+top10SummaryLabel <- "hospitals with best DTN\nin current year"

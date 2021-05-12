@@ -93,7 +93,7 @@ server <- shinyServer(function(input, output) {
         top10_n = n()
       )
     
-  #top10_filter_df <- merge(top10_filter_df, manipulateHospitalData(), by = "year")
+  top10_filter_df <- merge(top10_filter_df, manipulateHospitalData(), by = "year")
 
   })
 
@@ -113,7 +113,7 @@ server <- shinyServer(function(input, output) {
       select(hospital, DTNMedianCohort) %>%
       rename(startingDTNMedianCohort = DTNMedianCohort) %>%
       merge(cohort_df) 
-   # browser()
+
     # if it cannot find hospitals inside the country with the same starting DTN, then it cannot create a cohort. Problem for countries with few 
     # hospitals registered.
     cohort_filter_df <- cohort_start %>%
@@ -124,31 +124,31 @@ server <- shinyServer(function(input, output) {
         n = n()
       )
 
+  final_merge <- merge(cohort_filter_df, manipulateTop10HospitalData())
+  })
+  
+  dataEnds <- reactive({
+    dataEnds <- manipulateCohortData() %>%
+      slice(which.max(year))
 
   })
   
-  grob_x <- 0.50
-  fontSize <- 12
-  hospital_c <- "#39AEC6"
-  country_c <- "#C37165"
-  top10_c <- "#9F65C3"
-  cohort_c <- "#88C365"
-  title_plots <- "<span style = 'color: grey50;'>Door-to-needle time (DTN) progress in minutes within your country</span>"
+
+
   
-  hospitalText <- grobTree(textGrob("your hospital", x = 0.79, y = 0.6, hjust = 0, gp = gpar(col = hospital_c, fontsize = fontSize, fontface = "bold")))
-  countryText <- grobTree(textGrob("your country", x = 0.79, y = 0.56, hjust = 0, gp = gpar(col = country_c, fontsize = fontSize, fontface = "bold")))
-  cohortText <- grobTree(textGrob("hospitals with similar\nstarting year DTN as you", x = 0.79, y = 0.515, hjust = 0, gp = gpar(col = cohort_c, fontsize = fontSize, fontface = "bold")))
-  top10Text <- grobTree(textGrob("hospitals with best DTN\nin current year", x = 0.79, y = 0.45, hjust = 0, gp = gpar(col = top10_c, fontsize = fontSize, fontface = "bold")))
-  medianHospitalText <- grobTree(textGrob("Compared with the:", x = 0.225, y = 0.125, hjust = 0, gp = gpar(col = "grey50", fontsize = fontSize)))
-  yourText <- grobTree(textGrob("Your:", x = 0.01, y = 0.125, hjust = 0, gp = gpar(col = "grey50", fontsize = fontSize)))
-  
-  countryText2 <- grobTree(textGrob("country", x = 0.145, y = 0.125, hjust = 0, gp = gpar(col = country_c, fontsize = 15, fontface = "bold")))
-  cohortText2 <- grobTree(textGrob("median of hospitals DTN\nsimilar to your hospital's\nfirst year in RES-Q\nwithin your country", x = 0.4, y = 0.09, hjust = 0, gp = gpar(col = cohort_c, fontsize = 15, fontface = "bold")))
-  top10Text2 <- grobTree(textGrob("median of current best DTN\nwithin your country", x = 0.675, y = 0.109, hjust = 0, gp = gpar(col = top10_c, fontsize = 15, fontface = "bold")))
+  # hospitalText <- grobTree(textGrob("hospital", x = 0.79, y = 0.6, hjust = 0, gp = gpar(col = hospital_c, fontsize = fontSize, fontface = "bold")))
+  # countryText <- grobTree(textGrob("country", x = 0.79, y = 0.56, hjust = 0, gp = gpar(col = country_c, fontsize = fontSize, fontface = "bold")))
+  # cohortText <- grobTree(textGrob("similar hospitals", x = 0.79, y = 0.515, hjust = 0, gp = gpar(col = cohort_c, fontsize = fontSize, fontface = "bold")))
+  # top10Text <- grobTree(textGrob("best DTN hospitals", x = 0.79, y = 0.45, hjust = 0, gp = gpar(col = top10_c, fontsize = fontSize, fontface = "bold")))
+  # summarycohortText <- grobTree(textGrob("hospitals with similar\nstarting year DTN as you", x = 0.79, y = 0.515, hjust = 0, gp = gpar(col = cohort_c, fontsize = fontSize, fontface = "bold")))
+  # summarytop10Text <- grobTree(textGrob("hospitals with best DTN\nin current year", x = 0.79, y = 0.45, hjust = 0, gp = gpar(col = top10_c, fontsize = fontSize, fontface = "bold")))
+  # 
+  # 
+ 
   
   
   output$visual1 <- renderPlot({
-    manipulateHospitalData() %>%
+    manipulateCohortData() %>%
       ungroup() %>%
       ggplot(aes(x = year, y = hospitalMedian)) +
       geom_line(color = hospital_c, size = 2) +
@@ -158,21 +158,31 @@ server <- shinyServer(function(input, output) {
       expand_limits(x = 2021) +
       #theme_bw(color = "grey50") + 
       labs(
-        title = title_plots,
-        y = "Median DTN", x = "Years in RES-Q"
+        title = title_plot1,
+        subtitle = subtitle_plot1,
+        y = "Median DTN (minutes)", x = "Years in RES-Q"
       ) +
       theme(
-        plot.title = element_markdown(size = 20),
+        plot.title = element_markdown(size = 23),
+        plot.subtitle = element_markdown(size = 15),
         axis.title.x = element_text(hjust = .035, vjust = 0.2, color = "grey50"),
         axis.title.y = element_text(hjust = 0.95, vjust = 0.9, color = "grey50"),
         panel.background = element_rect(fill = "white", color = "grey50")
-      ) + annotation_custom(hospitalText)
+      ) +
+      geom_text_repel(data = dataEnds(), aes(x = year, y = hospitalMedian, label = hospitalLabel),
+                       color = hospital_c,
+                       fontface = "bold",
+                       fontsize = fontSize,
+                       nudge_x = .25,
+                       segment.linetype = 0,
+                       label.size = NA)
+      
     
       #geom_text(aes(label = round(hospitalMedian), color = "#56B4E9", nudge_y = 0.8))
   }) 
 
   output$visual2 <- renderPlot(
-    manipulateHospitalData() %>%
+    manipulateCohortData() %>%
       ungroup() %>%
       ggplot(aes(x = year, y = hospitalMedian)) +
       geom_line(aes(y = countryMedian), color = country_c, size = 2) +
@@ -183,70 +193,123 @@ server <- shinyServer(function(input, output) {
       scale_x_continuous(breaks = manipulateHospitalData()$year) +
       expand_limits(x = 2021) +
       labs(
-        title = title_plots,
-        y = "Median DTN", x = "Years in RES-Q"
+        title = title_plot2,
+        subtitle = subtitle_plots,
+        y = "Median DTN (minutes)", x = "Years in RES-Q"
       ) +
       theme(
-        plot.title = element_markdown(size = 20),
+        plot.title = element_markdown(size = 23),
+        plot.subtitle = element_markdown(size = 15),
         axis.title.x = element_text(hjust = .035, vjust = 0.2, color = "grey50"),
         axis.title.y = element_text(hjust = 0.95, vjust = 0.9, color = "grey50"),
         panel.background = element_rect(fill = "white", color = "grey50"),
         panel.grid.major.x = element_blank()
-      ) + 
-      annotation_custom(hospitalText) + annotation_custom(countryText)
+      ) +
+      geom_text_repel(data = dataEnds(), aes(x = year, y = hospitalMedian, label = hospitalLabel),
+                       color = hospital_c,
+                       fontface = "bold",
+                       fontsize = fontSize,
+                       nudge_x = 0.25, direction = "x", hjust = "left",
+                       segment.linetype = 0) + 
+      geom_text_repel(data = dataEnds(), aes(x = year, y = countryMedian, label = countryLabel),
+                       color = country_c,
+                       fontface = "bold",
+                       fontsize = fontSize,
+                       nudge_x = 0.25, direction = "x", hjust = "left",
+                       nudge_y = -1,
+                       segment.linetype = 0)
+
+
+
+
+      
   )
 
   output$visual3 <- renderPlot(
-    manipulateHospitalData() %>%
+    manipulateCohortData() %>%
       ungroup() %>%
       ggplot(aes(x = year, y = hospitalMedian)) +
       geom_line(aes(y = countryMedian), color = "grey50", size = 2) +
       geom_point(aes(y = countryMedian), shape = 21, color = "grey50", size = 5.5, stroke = 1.7, fill = "white") +
-      geom_line(data = manipulateCohortData(), aes(x = year, y = cohortMeanofMedian), color = cohort_c, size = 2) +
-      geom_point(data = manipulateCohortData(), aes(x = year, y = cohortMeanofMedian), shape = 21, color = cohort_c, fill = "white", size = 5.5, stroke = 1.7) +
+      geom_line(aes(x = year, y = cohortMeanofMedian), color = cohort_c, size = 2) +
+      geom_point(aes(x = year, y = cohortMeanofMedian), shape = 21, color = cohort_c, fill = "white", size = 5.5, stroke = 1.7) +
       geom_line(color = hospital_c, size = 2) +
       geom_point(shape = 21, color = hospital_c, fill = "white", size = 5.5, stroke = 1.7) +
       expandy(manipulateHospitalData()$DTNMedian, 0) +
       scale_x_continuous(breaks = manipulateHospitalData()$year) +
       expand_limits(x = 2021) +
       labs(
-        title = title_plots,
-        y = "Median DTN", x = "Years in RES-Q"
+        title = title_plot3,
+        subtitle = subtitle_plots,
+        y = "Median DTN (minutes)", x = "Years in RES-Q"
       ) +
       theme(
-        plot.title = element_markdown(size = 20),
+        plot.title = element_markdown(size = 23),
+        plot.subtitle = element_markdown(size = 15),
         axis.title.x = element_text(hjust = .035, vjust = 0.2, color = "grey50"),
         axis.title.y = element_text(hjust = 0.95, vjust = 0.9, color = "grey50"),
         panel.background = element_rect(fill = "white", color = "grey50")
       ) +
-      annotation_custom(hospitalText) + annotation_custom(cohortText)
+      geom_text_repel(data = dataEnds(), aes(x = year, y = hospitalMedian, label = hospitalLabel),
+                       color = hospital_c,
+                       fontface = "bold",
+                       fontsize = fontSize,
+                       nudge_x = 0.25, direction = "x", hjust = "left",
+                       segment.linetype = 0,
+                       label.size = NA) + 
+      geom_text_repel(data = dataEnds(), aes(x = year, y = cohortMeanofMedian, label = cohortLabel),
+                       color = cohort_c,
+                       fontface = "bold",
+                       fontsize = fontSize,
+                       nudge_x = 0.25, direction = "x", hjust = "left",
+                       nudge_y = -1,
+                       segment.linetype = 0,
+                       label.size = NA)
   )
 
   output$visual4 <- renderPlot(
-      manipulateHospitalData() %>%
+      manipulateCohortData() %>%
         ungroup() %>%
         ggplot(aes(x = year, y = hospitalMedian)) +
         geom_line(aes(y = countryMedian), color = "grey50", size = 2) +
         geom_point(aes(y = countryMedian), shape = 21, color = "grey50", fill = "white", size = 5.5, stroke = 1.7) +
-        geom_line(data = manipulateCohortData(), aes(x = year, y = cohortMeanofMedian), color = "grey50", size = 2) +
-        geom_point(data = manipulateCohortData(), aes(x = year, y = cohortMeanofMedian), shape = 21, color = "grey50", fill = "white", size = 5.5, stroke = 1.7) +
-        geom_line(data = manipulateTop10HospitalData(), aes(x = year, y = top10Median), color = top10_c, size = 2) +
-        geom_point(data = manipulateTop10HospitalData(), aes(x = year, y = top10Median), shape = 21, color = top10_c, fill = "white", size = 5.5, stroke = 1.7) +
+        geom_line(aes(x = year, y = cohortMeanofMedian), color = "grey50", size = 2) +
+        geom_point(aes(x = year, y = cohortMeanofMedian), shape = 21, color = "grey50", fill = "white", size = 5.5, stroke = 1.7) +
+        geom_line(aes(x = year, y = top10Median), color = top10_c, size = 2) +
+        geom_point(aes(x = year, y = top10Median), shape = 21, color = top10_c, fill = "white", size = 5.5, stroke = 1.7) +
         geom_line(color = hospital_c, size = 2) +
         geom_point(shape = 21, color = hospital_c, fill = "white", size = 5.5, stroke = 1.7) +
         expandy(manipulateHospitalData()$DTNMedian, 0) +
         scale_x_continuous(breaks = manipulateHospitalData()$year) +
         expand_limits(x = 2021) +
         labs(
-          title = title_plots,
-          y = "Median DTN", x = "Years in RES-Q"
+          color = "grey50",
+          title = title_plot4,
+          subtitle = subtitle_plots,
+          y = "Median DTN (minutes)", x = "Years in RES-Q"
         ) +
         theme(
-          plot.title = element_markdown(size = 20),
+          plot.title = element_markdown(size = 23),
+          plot.subtitle = element_markdown(size = 15),
           axis.title.x = element_text(hjust = .035, vjust = 0.2, color = "grey50"),
           axis.title.y = element_text(hjust = 0.95, vjust = 0.9, color = "grey50"),
           panel.background = element_rect(fill = "white", color = "grey50")
-        ) + annotation_custom(hospitalText) + annotation_custom(top10Text) 
+        )  +
+        geom_text_repel(data = dataEnds(), aes(x = year, y = hospitalMedian, label = hospitalLabel),
+                         color = hospital_c,
+                         fontface = "bold",
+                         fontsize = fontSize,
+                         nudge_x = 0.25, direction = "x", hjust = "left",
+                         segment.linetype = 0,
+                         label.size = NA) + 
+        geom_text_repel(data = dataEnds(), aes(x = year, y = top10Median, label = top10Label),
+                         color = top10_c,
+                         fontface = "bold",
+                         fontsize = fontSize,
+                         nudge_x = 0.25, direction = "x", hjust = "left",
+                         nudge_y = -1,
+                         segment.linetype = 0,
+                         label.size = NA)
     )
   
   output$visual5 <- renderPlot(
@@ -265,16 +328,48 @@ server <- shinyServer(function(input, output) {
       scale_x_continuous(breaks = manipulateHospitalData()$year) +
       expand_limits(x = 2021) +
       labs(
-        title = title_plots,
-        y = "Median DTN", x = "Years in RES-Q"
+        title = title_plot5,
+        subtitle = subtitle_plots,
+        y = "Median DTN (minutes)", x = "Years in RES-Q"
       ) +
       theme(
-        plot.title = element_markdown(size = 20),
+        plot.title = element_markdown(size = 23),
+        plot.subtitle = element_markdown(size = 15),
         axis.title.x = element_text(hjust = .035, vjust = 0.2, color = "grey50"),
         axis.title.y = element_text(hjust = 0.95, vjust = 0.9, color = "grey50"),
         panel.background = element_rect(fill = "white", color = "grey50")
-      ) + annotation_custom(hospitalText) + annotation_custom(top10Text) +  
-          annotation_custom(countryText) + annotation_custom(cohortText)
+      ) + 
+      geom_text_repel(data = dataEnds(), aes(x = year, y = hospitalMedian, label = hospitalLabel),
+                       color = hospital_c,
+                       fontface = "bold",
+                       fontsize = fontSize,
+                       nudge_x = 0.3, direction = "x", hjust = "left",
+                       segment.linetype = 0
+                       ) + 
+      geom_text_repel(data = dataEnds(), aes(x = year, y = countryMedian, label = countryLabel),
+                       color = country_c,
+                       fontface = "bold",
+                       fontsize = fontSize,
+                       nudge_x = 0.3, direction = "x", hjust = "left",
+                       nudge_y = -1,
+                       segment.linetype = 0
+                       ) +
+      geom_text_repel(data = dataEnds(), aes(x = year, y = cohortMeanofMedian, label = cohortSummaryLabel),
+                       color = cohort_c,
+                       fontface = "bold",
+                       fontsize = fontSize,
+                       nudge_x = 0.45, direction = "x", hjust = "left",
+                       nudge_y = -1,
+                       segment.linetype = 0
+                       ) +
+      geom_text_repel(data = dataEnds(), aes(x = year, y = top10Median, label = top10SummaryLabel),
+                       color = top10_c,
+                       fontface = "bold",
+                       fontsize = fontSize,
+                       nudge_x = 0.45, direction = "x", hjust = "left",
+                       nudge_y = -1,
+                       segment.linetype = 0
+                       )
   )
   
 })
