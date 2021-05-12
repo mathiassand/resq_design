@@ -208,13 +208,11 @@ server <- shinyServer(function(input, output) {
       geom_text_repel(data = dataEnds(), aes(x = year, y = hospitalMedian, label = hospitalLabel),
                        color = hospital_c,
                        fontface = "bold",
-                       fontsize = fontSize,
                        nudge_x = 0.25, direction = "x", hjust = "left",
                        segment.linetype = 0) + 
       geom_text_repel(data = dataEnds(), aes(x = year, y = countryMedian, label = countryLabel),
                        color = country_c,
                        fontface = "bold",
-                       fontsize = fontSize,
                        nudge_x = 0.25, direction = "x", hjust = "left",
                        nudge_y = -1,
                        segment.linetype = 0)
@@ -253,14 +251,12 @@ server <- shinyServer(function(input, output) {
       geom_text_repel(data = dataEnds(), aes(x = year, y = hospitalMedian, label = hospitalLabel),
                        color = hospital_c,
                        fontface = "bold",
-                       fontsize = fontSize,
                        nudge_x = 0.25, direction = "x", hjust = "left",
                        segment.linetype = 0,
                        label.size = NA) + 
       geom_text_repel(data = dataEnds(), aes(x = year, y = cohortMeanofMedian, label = cohortLabel),
                        color = cohort_c,
                        fontface = "bold",
-                       fontsize = fontSize,
                        nudge_x = 0.25, direction = "x", hjust = "left",
                        nudge_y = -1,
                        segment.linetype = 0,
@@ -298,14 +294,12 @@ server <- shinyServer(function(input, output) {
         geom_text_repel(data = dataEnds(), aes(x = year, y = hospitalMedian, label = hospitalLabel),
                          color = hospital_c,
                          fontface = "bold",
-                         fontsize = fontSize,
                          nudge_x = 0.25, direction = "x", hjust = "left",
                          segment.linetype = 0,
                          label.size = NA) + 
         geom_text_repel(data = dataEnds(), aes(x = year, y = top10Median, label = top10Label),
                          color = top10_c,
                          fontface = "bold",
-                         fontsize = fontSize,
                          nudge_x = 0.25, direction = "x", hjust = "left",
                          nudge_y = -1,
                          segment.linetype = 0,
@@ -342,14 +336,12 @@ server <- shinyServer(function(input, output) {
       geom_text_repel(data = dataEnds(), aes(x = year, y = hospitalMedian, label = hospitalLabel),
                        color = hospital_c,
                        fontface = "bold",
-                       fontsize = fontSize,
                        nudge_x = 0.3, direction = "x", hjust = "left",
                        segment.linetype = 0
                        ) + 
       geom_text_repel(data = dataEnds(), aes(x = year, y = countryMedian, label = countryLabel),
                        color = country_c,
                        fontface = "bold",
-                       fontsize = fontSize,
                        nudge_x = 0.3, direction = "x", hjust = "left",
                        nudge_y = -1,
                        segment.linetype = 0
@@ -357,7 +349,6 @@ server <- shinyServer(function(input, output) {
       geom_text_repel(data = dataEnds(), aes(x = year, y = cohortMeanofMedian, label = cohortSummaryLabel),
                        color = cohort_c,
                        fontface = "bold",
-                       fontsize = fontSize,
                        nudge_x = 0.45, direction = "x", hjust = "left",
                        nudge_y = -1,
                        segment.linetype = 0
@@ -365,7 +356,6 @@ server <- shinyServer(function(input, output) {
       geom_text_repel(data = dataEnds(), aes(x = year, y = top10Median, label = top10SummaryLabel),
                        color = top10_c,
                        fontface = "bold",
-                       fontsize = fontSize,
                        nudge_x = 0.45, direction = "x", hjust = "left",
                        nudge_y = -1,
                        segment.linetype = 0
