@@ -194,7 +194,7 @@ server <- shinyServer(function(input, output) {
       expand_limits(x = 2021) +
       labs(
         title = title_plot2,
-        subtitle = subtitle_plots,
+        subtitle = subtitle_plot2,
         y = "Median DTN (minutes)", x = "Years in RES-Q"
       ) +
       theme(

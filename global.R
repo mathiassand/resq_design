@@ -62,7 +62,8 @@ title_plot3 <- "<span style = 'color: grey50;'>Your hospital compared to hospita
 title_plot4 <- "<span style = 'color: grey50;'>Your hospital compared to hospitals with best DTN in the current year</span>"
 title_plot5 <- "<span style = 'color: grey50;'>Summary of comparisons</span>"
 subtitle_plot1 <- "<span style = 'color: grey50;'>Door-to-needle time (DTN) progress</span>"
-subtitle_plots <- "<span style = 'color: grey50;'>Door-to-needle time (DTN) progress within your country</span>"
+subtitle_plot2 <- "<span style = 'color: grey50;'>Door-to-needle time progress</span>"
+subtitle_plots <- "<span style = 'color: grey50;'>Door-to-needle time progress within your country</span>"
 
 hospitalLabel <- "hospital"
 countryLabel <- "country"
