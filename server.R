@@ -123,7 +123,7 @@ server <- shinyServer(function(input, output) {
         cohortMeanofMedian = median(DTNMedian),
         n = n()
       )
-browser()
+
 
   })
   
@@ -134,7 +134,6 @@ browser()
   top10_c <- "#9F65C3"
   cohort_c <- "#88C365"
   title_plots <- "<span style = 'color: grey50;'>Door-to-needle time (DTN) progress in minutes within your country</span>"
-  
   
   hospitalText <- grobTree(textGrob("your hospital", x = 0.79, y = 0.6, hjust = 0, gp = gpar(col = hospital_c, fontsize = fontSize, fontface = "bold")))
   countryText <- grobTree(textGrob("your country", x = 0.79, y = 0.56, hjust = 0, gp = gpar(col = country_c, fontsize = fontSize, fontface = "bold")))
@@ -193,7 +192,7 @@ browser()
         axis.title.y = element_text(hjust = 0.95, vjust = 0.9, color = "grey50"),
         panel.background = element_rect(fill = "white", color = "grey50"),
         panel.grid.major.x = element_blank()
-      ) +
+      ) + 
       annotation_custom(hospitalText) + annotation_custom(countryText)
   )
 
