@@ -33,7 +33,14 @@ ui<-navbarPage("RES-Q Open Hospital",
                             br(),
                             br(),
                             br(),
-                            plotOutput("visual4", width = "70%", height = "650px")
+                            plotOutput("visual4", width = "70%", height = "650px"),
+                            br(),
+                            br(),
+                            br(),
+                            br(),
+                            br(),
+                            br(),
+                            plotOutput("visual5", width = "70%", height = "650px")
                           )
                           
                         )
