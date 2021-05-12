@@ -263,9 +263,9 @@ server <- shinyServer(function(input, output) {
                        label.size = NA)
   )
 
-  output$visual4 <- renderPlot(
-      manipulateCohortData() %>%
-        ungroup() %>%
+  output$visual4 <- renderPlot({
+    manipulateCohortData() %>%
+      ungroup() %>%
         ggplot(aes(x = year, y = hospitalMedian)) +
         geom_line(aes(y = countryMedian), color = "grey50", size = 2) +
         geom_point(aes(y = countryMedian), shape = 21, color = "grey50", fill = "white", size = 5.5, stroke = 1.7) +
@@ -304,18 +304,18 @@ server <- shinyServer(function(input, output) {
                          nudge_y = -1,
                          segment.linetype = 0,
                          label.size = NA)
-    )
+  })
   
   output$visual5 <- renderPlot(
-    manipulateHospitalData() %>%
+    manipulateCohortData() %>%
       ungroup() %>%
       ggplot(aes(x = year, y = hospitalMedian)) +
       geom_line(aes(y = countryMedian), color = country_c, size = 2) +
       geom_point(aes(y = countryMedian), shape = 21, color = country_c, fill = "white", size = 5.5, stroke = 1.7) +
-      geom_line(data = manipulateCohortData(), aes(x = year, y = cohortMeanofMedian), color = cohort_c, size = 2) +
-      geom_point(data = manipulateCohortData(), aes(x = year, y = cohortMeanofMedian), shape = 21, color = cohort_c, fill = "white", size = 5.5, stroke = 1.7) +
-      geom_line(data = manipulateTop10HospitalData(), aes(x = year, y = top10Median), color = top10_c, size = 2) +
-      geom_point(data = manipulateTop10HospitalData(), aes(x = year, y = top10Median), shape = 21, color = top10_c, fill = "white", size = 5.5, stroke = 1.7) +
+      geom_line(aes(x = year, y = cohortMeanofMedian), color = cohort_c, size = 2) +
+      geom_point(aes(x = year, y = cohortMeanofMedian), shape = 21, color = cohort_c, fill = "white", size = 5.5, stroke = 1.7) +
+      geom_line(aes(x = year, y = top10Median), color = top10_c, size = 2) +
+      geom_point(aes(x = year, y = top10Median), shape = 21, color = top10_c, fill = "white", size = 5.5, stroke = 1.7) +
       geom_line(color = hospital_c, size = 2) +
       geom_point(shape = 21, color = hospital_c, fill = "white", size = 5.5, stroke = 1.7) +
       expandy(manipulateHospitalData()$DTNMedian, 0) +

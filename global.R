@@ -4,7 +4,6 @@ library(ggtext)
 library(ggrepel)
 library(directlabels)
 library(shiny)
-library(plotly)
 
 resq_anon <- read_csv("anon_data_Hendrik.csv")
 
