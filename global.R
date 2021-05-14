@@ -49,7 +49,7 @@ expandy = function(vec, ymin=NULL) {
   expand_limits(y=c(ymin, ceiling(max.val/10^min.log)*10^min.log))
 }
 
-fontSize <- 12
+fontSize <- 6
 hospital_c <- "#39AEC6"
 country_c <- "#C37165"
 top10_c <- "#9F65C3"

@@ -165,15 +165,15 @@ server <- shinyServer(function(input, output) {
       theme(
         plot.title = element_markdown(size = 23),
         plot.subtitle = element_markdown(size = 15),
-        axis.title.x = element_text(hjust = .035, vjust = 0.2, color = "grey50"),
-        axis.title.y = element_text(hjust = 0.95, vjust = 0.9, color = "grey50"),
+        axis.title.x = element_text(hjust = .035, vjust = 0.2, color = "grey50", size = 15),
+        axis.title.y = element_text(hjust = 0.95, vjust = 0.9, color = "grey50", size = 15),
         panel.background = element_rect(fill = "white", color = "grey50")
       ) +
       geom_text_repel(data = dataEnds(), aes(x = year, y = hospitalMedian, label = hospitalLabel),
                        color = hospital_c,
                        fontface = "bold",
-                       fontsize = fontSize,
-                       nudge_x = .25,
+                       size = fontSize,
+                       nudge_x = .5,
                        segment.linetype = 0,
                        label.size = NA)
       
@@ -200,19 +200,21 @@ server <- shinyServer(function(input, output) {
       theme(
         plot.title = element_markdown(size = 23),
         plot.subtitle = element_markdown(size = 15),
-        axis.title.x = element_text(hjust = .035, vjust = 0.2, color = "grey50"),
-        axis.title.y = element_text(hjust = 0.95, vjust = 0.9, color = "grey50"),
+        axis.title.x = element_text(hjust = .035, vjust = 0.2, color = "grey50", size = 15),
+        axis.title.y = element_text(hjust = 0.95, vjust = 0.9, color = "grey50", size = 15),
         panel.background = element_rect(fill = "white", color = "grey50"),
         panel.grid.major.x = element_blank()
       ) +
       geom_text_repel(data = dataEnds(), aes(x = year, y = hospitalMedian, label = hospitalLabel),
                        color = hospital_c,
                        fontface = "bold",
+                       size = fontSize,
                        nudge_x = 0.25, direction = "x", hjust = "left",
                        segment.linetype = 0) + 
       geom_text_repel(data = dataEnds(), aes(x = year, y = countryMedian, label = countryLabel),
                        color = country_c,
                        fontface = "bold",
+                       size = fontSize,
                        nudge_x = 0.25, direction = "x", hjust = "left",
                        nudge_y = -1,
                        segment.linetype = 0)
@@ -244,19 +246,21 @@ server <- shinyServer(function(input, output) {
       theme(
         plot.title = element_markdown(size = 23),
         plot.subtitle = element_markdown(size = 15),
-        axis.title.x = element_text(hjust = .035, vjust = 0.2, color = "grey50"),
-        axis.title.y = element_text(hjust = 0.95, vjust = 0.9, color = "grey50"),
+        axis.title.x = element_text(hjust = .035, vjust = 0.2, color = "grey50", size = 15),
+        axis.title.y = element_text(hjust = 0.95, vjust = 0.9, color = "grey50", size = 15),
         panel.background = element_rect(fill = "white", color = "grey50")
       ) +
       geom_text_repel(data = dataEnds(), aes(x = year, y = hospitalMedian, label = hospitalLabel),
                        color = hospital_c,
                        fontface = "bold",
+                       size = fontSize,
                        nudge_x = 0.25, direction = "x", hjust = "left",
                        segment.linetype = 0,
                        label.size = NA) + 
       geom_text_repel(data = dataEnds(), aes(x = year, y = cohortMeanofMedian, label = cohortLabel),
                        color = cohort_c,
                        fontface = "bold",
+                       size = fontSize,
                        nudge_x = 0.25, direction = "x", hjust = "left",
                        nudge_y = -1,
                        segment.linetype = 0,
@@ -287,19 +291,21 @@ server <- shinyServer(function(input, output) {
         theme(
           plot.title = element_markdown(size = 23),
           plot.subtitle = element_markdown(size = 15),
-          axis.title.x = element_text(hjust = .035, vjust = 0.2, color = "grey50"),
-          axis.title.y = element_text(hjust = 0.95, vjust = 0.9, color = "grey50"),
+          axis.title.x = element_text(hjust = .035, vjust = 0.2, color = "grey50", size = 15),
+          axis.title.y = element_text(hjust = 0.95, vjust = 0.9, color = "grey50", size = 15),
           panel.background = element_rect(fill = "white", color = "grey50")
         )  +
         geom_text_repel(data = dataEnds(), aes(x = year, y = hospitalMedian, label = hospitalLabel),
                          color = hospital_c,
                          fontface = "bold",
+                         size = fontSize,
                          nudge_x = 0.25, direction = "x", hjust = "left",
                          segment.linetype = 0,
                          label.size = NA) + 
         geom_text_repel(data = dataEnds(), aes(x = year, y = top10Median, label = top10Label),
                          color = top10_c,
                          fontface = "bold",
+                         size = fontSize,
                          nudge_x = 0.25, direction = "x", hjust = "left",
                          nudge_y = -1,
                          segment.linetype = 0,
@@ -329,19 +335,21 @@ server <- shinyServer(function(input, output) {
       theme(
         plot.title = element_markdown(size = 23),
         plot.subtitle = element_markdown(size = 15),
-        axis.title.x = element_text(hjust = .035, vjust = 0.2, color = "grey50"),
-        axis.title.y = element_text(hjust = 0.95, vjust = 0.9, color = "grey50"),
+        axis.title.x = element_text(hjust = .035, vjust = 0.2, color = "grey50", size = 15),
+        axis.title.y = element_text(hjust = 0.95, vjust = 0.9, color = "grey50", size = 15),
         panel.background = element_rect(fill = "white", color = "grey50")
       ) + 
       geom_text_repel(data = dataEnds(), aes(x = year, y = hospitalMedian, label = hospitalLabel),
                        color = hospital_c,
                        fontface = "bold",
+                       size = fontSize,
                        nudge_x = 0.3, direction = "x", hjust = "left",
                        segment.linetype = 0
                        ) + 
       geom_text_repel(data = dataEnds(), aes(x = year, y = countryMedian, label = countryLabel),
                        color = country_c,
                        fontface = "bold",
+                       size = fontSize,
                        nudge_x = 0.3, direction = "x", hjust = "left",
                        nudge_y = -1,
                        segment.linetype = 0
@@ -349,15 +357,17 @@ server <- shinyServer(function(input, output) {
       geom_text_repel(data = dataEnds(), aes(x = year, y = cohortMeanofMedian, label = cohortSummaryLabel),
                        color = cohort_c,
                        fontface = "bold",
+                       size = fontSize,
                        nudge_x = 0.45, direction = "x", hjust = "left",
-                       nudge_y = -1,
+                       nudge_y = -2,
                        segment.linetype = 0
                        ) +
       geom_text_repel(data = dataEnds(), aes(x = year, y = top10Median, label = top10SummaryLabel),
                        color = top10_c,
                        fontface = "bold",
+                       size = fontSize,
                        nudge_x = 0.45, direction = "x", hjust = "left",
-                       nudge_y = -1,
+                       nudge_y = -2,
                        segment.linetype = 0
                        )
   )
