@@ -1,31 +1,5 @@
 # Define server logic required to draw plots ----
 server <- shinyServer(function(input, output) {
-  manipulateStatusData <- reactive({
-    # Current Status Dashboard variables
-    resq_CS_df <- resq_clean %>%
-      # filtering for years after 2015 only, as Mirek told us RES-Q was added in 2016.
-      # Dataset has a lot of misstypes, or errors? 1900, 2013, 2014 etc.
-      # filtering for DTN less than 10 and larger than 400, ask Mirek told us these are "normal" cutting points
-      filter(
-        hospital == input$Select_hospital_ID,
-        year >= 2016, year <= 2020, DTN > 10, DTN < 400,
-        `stroke type` == "ischemic"
-      ) %>%
-      group_by(hospital, year) %>%
-      summarise(
-        firstYear = min(year),
-        latestYear = max(year),
-        fastestDTN = min(DTN),
-        slowestDTN = max(DTN),
-        medianDTN = median(DTN),
-        averageDTN = mean(DTN),
-        DTNCount = n_distinct(DTN),
-        patient_count = n_distinct(subject_id)
-      ) %>%
-      ungroup()
-  })
-
-
   manipulateHospitalData <- reactive({
     hospital_df <- join_df %>%
       ungroup() %>%
@@ -57,14 +31,9 @@ server <- shinyServer(function(input, output) {
       ungroup()
 
     merged_country_hospital <- merge(country_median_df, hospital_median_df, by = "year")
- 
   })
 
   manipulateTop10HospitalData <- reactive ({
-    # filter_country_DTNCount <- join_df %>%
-    #   group_by(year) %>%
-    #   filter(country == manipulateHospitalData()$country & DTNCount > 3)
-    
     top10_cohort_df <- join_df %>%
       ungroup() %>%
       group_by(year) %>%
@@ -94,7 +63,6 @@ server <- shinyServer(function(input, output) {
       )
     
   top10_filter_df <- merge(top10_filter_df, manipulateHospitalData(), by = "year")
-
   })
 
 
@@ -117,35 +85,22 @@ server <- shinyServer(function(input, output) {
     # if it cannot find hospitals inside the country with the same starting DTN, then it cannot create a cohort. Problem for countries with few 
     # hospitals registered.
     cohort_filter_df <- cohort_start %>%
-      filter(year == manipulateHospitalData()$year & startingDTNMedianCohort == manipulateHospitalData()$startingDTNMedianHospital) %>%
+      filter(startingDTNMedianCohort == manipulateHospitalData()$startingDTNMedianHospital) %>%
       group_by(year) %>%
       summarise(
         cohortMeanofMedian = median(DTNMedian),
-        n = n()
+        cohort_n = n()
       )
 
-  final_merge <- merge(cohort_filter_df, manipulateTop10HospitalData())
+  final_merge <- merge(manipulateTop10HospitalData(), cohort_filter_df)
   })
+  
   
   dataEnds <- reactive({
     dataEnds <- manipulateCohortData() %>%
       slice(which.max(year))
-
   })
-  
-
-
-  
-  # hospitalText <- grobTree(textGrob("hospital", x = 0.79, y = 0.6, hjust = 0, gp = gpar(col = hospital_c, fontsize = fontSize, fontface = "bold")))
-  # countryText <- grobTree(textGrob("country", x = 0.79, y = 0.56, hjust = 0, gp = gpar(col = country_c, fontsize = fontSize, fontface = "bold")))
-  # cohortText <- grobTree(textGrob("similar hospitals", x = 0.79, y = 0.515, hjust = 0, gp = gpar(col = cohort_c, fontsize = fontSize, fontface = "bold")))
-  # top10Text <- grobTree(textGrob("best DTN hospitals", x = 0.79, y = 0.45, hjust = 0, gp = gpar(col = top10_c, fontsize = fontSize, fontface = "bold")))
-  # summarycohortText <- grobTree(textGrob("hospitals with similar\nstarting year DTN as you", x = 0.79, y = 0.515, hjust = 0, gp = gpar(col = cohort_c, fontsize = fontSize, fontface = "bold")))
-  # summarytop10Text <- grobTree(textGrob("hospitals with best DTN\nin current year", x = 0.79, y = 0.45, hjust = 0, gp = gpar(col = top10_c, fontsize = fontSize, fontface = "bold")))
-  # 
-  # 
  
-  
   
   output$visual1 <- renderPlot({
     manipulateCohortData() %>%
@@ -153,10 +108,9 @@ server <- shinyServer(function(input, output) {
       ggplot(aes(x = year, y = hospitalMedian)) +
       geom_line(color = hospital_c, size = 2) +
       geom_point(shape = 21, color = hospital_c, fill = "white", size = 5.5, stroke = 1.7) +
-      expandy(manipulateHospitalData()$DTNMedian, 0) +
-      scale_x_continuous(breaks = manipulateHospitalData()$year) +
+      expandy(manipulateCohortData()$DTNMedian, 0) +
+      scale_x_continuous(breaks = manipulateCohortData()$year) +
       expand_limits(x = 2021) +
-      #theme_bw(color = "grey50") + 
       labs(
         title = title_plot1,
         subtitle = subtitle_plot1,
@@ -169,19 +123,16 @@ server <- shinyServer(function(input, output) {
         axis.title.y = element_text(hjust = 0.95, vjust = 0.9, color = "grey50", size = 15),
         panel.background = element_rect(fill = "white", color = "grey50")
       ) +
-      geom_text_repel(data = dataEnds(), aes(x = year, y = hospitalMedian, label = hospitalLabel),
+      geom_text_repel(data = subset(dataEnds(), year == max(year), hospitalMedian == max(hospitalMedian)), aes(x = Inf, y = Inf, label = hospitalLabel),
                        color = hospital_c,
                        fontface = "bold",
                        size = fontSize,
                        nudge_x = .5,
                        segment.linetype = 0,
                        label.size = NA)
-      
-    
-      #geom_text(aes(label = round(hospitalMedian), color = "#56B4E9", nudge_y = 0.8))
   }) 
 
-  output$visual2 <- renderPlot(
+  output$visual2 <- renderPlot({
     manipulateCohortData() %>%
       ungroup() %>%
       ggplot(aes(x = year, y = hospitalMedian)) +
@@ -189,8 +140,8 @@ server <- shinyServer(function(input, output) {
       geom_point(aes(y = countryMedian), shape = 21, color = country_c, fill = "white", size = 5.5, stroke = 1.7) +
       geom_line(color = hospital_c, size = 2) +
       geom_point(shape = 21, color = hospital_c, fill = "white", size = 5.5, stroke = 1.7) +
-      expandy(manipulateHospitalData()$DTNMedian, 0) +
-      scale_x_continuous(breaks = manipulateHospitalData()$year) +
+      expandy(manipulateCohortData()$DTNMedian, 0) +
+      scale_x_continuous(breaks = manipulateCohortData()$year) +
       expand_limits(x = 2021) +
       labs(
         title = title_plot2,
@@ -218,14 +169,10 @@ server <- shinyServer(function(input, output) {
                        nudge_x = 0.25, direction = "x", hjust = "left",
                        nudge_y = -1,
                        segment.linetype = 0)
-
-
-
-
       
-  )
+  })
 
-  output$visual3 <- renderPlot(
+  output$visual3 <- renderPlot({
     manipulateCohortData() %>%
       ungroup() %>%
       ggplot(aes(x = year, y = hospitalMedian)) +
@@ -235,8 +182,8 @@ server <- shinyServer(function(input, output) {
       geom_point(aes(x = year, y = cohortMeanofMedian), shape = 21, color = cohort_c, fill = "white", size = 5.5, stroke = 1.7) +
       geom_line(color = hospital_c, size = 2) +
       geom_point(shape = 21, color = hospital_c, fill = "white", size = 5.5, stroke = 1.7) +
-      expandy(manipulateHospitalData()$DTNMedian, 0) +
-      scale_x_continuous(breaks = manipulateHospitalData()$year) +
+      expandy(manipulateCohortData()$DTNMedian, 0) +
+      scale_x_continuous(breaks = manipulateCohortData()$year) +
       expand_limits(x = 2021) +
       labs(
         title = title_plot3,
@@ -265,7 +212,7 @@ server <- shinyServer(function(input, output) {
                        nudge_y = -1,
                        segment.linetype = 0,
                        label.size = NA)
-  )
+  })
 
   output$visual4 <- renderPlot({
     manipulateCohortData() %>%
@@ -279,8 +226,8 @@ server <- shinyServer(function(input, output) {
         geom_point(aes(x = year, y = top10Median), shape = 21, color = top10_c, fill = "white", size = 5.5, stroke = 1.7) +
         geom_line(color = hospital_c, size = 2) +
         geom_point(shape = 21, color = hospital_c, fill = "white", size = 5.5, stroke = 1.7) +
-        expandy(manipulateHospitalData()$DTNMedian, 0) +
-        scale_x_continuous(breaks = manipulateHospitalData()$year) +
+      expandy(manipulateCohortData()$DTNMedian, 0) +
+      scale_x_continuous(breaks = manipulateCohortData()$year) +
         expand_limits(x = 2021) +
         labs(
           color = "grey50",
@@ -312,7 +259,7 @@ server <- shinyServer(function(input, output) {
                          label.size = NA)
   })
   
-  output$visual5 <- renderPlot(
+  output$visual5 <- renderPlot({
     manipulateCohortData() %>%
       ungroup() %>%
       ggplot(aes(x = year, y = hospitalMedian)) +
@@ -324,8 +271,8 @@ server <- shinyServer(function(input, output) {
       geom_point(aes(x = year, y = top10Median), shape = 21, color = top10_c, fill = "white", size = 5.5, stroke = 1.7) +
       geom_line(color = hospital_c, size = 2) +
       geom_point(shape = 21, color = hospital_c, fill = "white", size = 5.5, stroke = 1.7) +
-      expandy(manipulateHospitalData()$DTNMedian, 0) +
-      scale_x_continuous(breaks = manipulateHospitalData()$year) +
+      expandy(manipulateCohortData()$DTNMedian, 0) +
+      scale_x_continuous(breaks = manipulateCohortData()$year) +
       expand_limits(x = 2021) +
       labs(
         title = title_plot5,
@@ -370,6 +317,6 @@ server <- shinyServer(function(input, output) {
                        nudge_y = -2,
                        segment.linetype = 0
                        )
-  )
+  })
   
 })
