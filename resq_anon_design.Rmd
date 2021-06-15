@@ -81,6 +81,12 @@ cohort_df <- cohort_df %>%
   select(hospital, DTNMeanCohort) %>%
   rename(startingDTNMeanCohort = DTNMeanCohort) %>%
   merge(cohort_df)
+
+effectRESQ <- resq_clean %>%
+  group_by(hospital, year) %>%
+  summarise(medianDTN = median(DTN))
+  
+  
 ```
 
 ## Including Plots
@@ -104,12 +110,13 @@ cohort_df %>%
   ungroup() %>%
   filter(DTNMean < 200 & year >= 2016 & year < 2021 & noOfYears > 3) %>%
   ggplot(aes(x = jitter(runningYear, amount = 0.1), colour = startingDTNMeanCohort, y = DTNMean)) +
-  geom_point(alpha = 1 / 5) +
+  #geom_point(alpha = 1 / 5) +
   geom_smooth(se = FALSE, alpha = .5) +
-  theme_bw() +
+  theme_classic() +
   coord_cartesian(ylim = c(0, 200)) +
   scale_x_continuous(breaks = seq(1, 6, 1)) +
   labs(title = "Hospitals, Excluding 2021")
+
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

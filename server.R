@@ -123,13 +123,12 @@ server <- shinyServer(function(input, output) {
         axis.title.y = element_text(hjust = 0.95, vjust = 0.9, color = "grey50", size = 15),
         panel.background = element_rect(fill = "white", color = "grey50")
       ) +
-      geom_text_repel(data = subset(dataEnds(), year == max(year), hospitalMedian == max(hospitalMedian)), aes(x = Inf, y = Inf, label = hospitalLabel),
-                       color = hospital_c,
-                       fontface = "bold",
-                       size = fontSize,
-                       nudge_x = .5,
-                       segment.linetype = 0,
-                       label.size = NA)
+      geom_text_repel(data = dataEnds(), aes(x = year, y = hospitalMedian, label = hospitalLabel),
+                      color = hospital_c,
+                      fontface = "bold",
+                      size = fontSize,
+                      nudge_x = 0.25, direction = "x", hjust = "left",
+                      segment.linetype = 0)
   }) 
 
   output$visual2 <- renderPlot({
